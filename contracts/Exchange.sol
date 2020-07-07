@@ -1,3 +1,6 @@
+pragma solidity ^0.6.0;
+pragma experimental ABIEncoderV2;
+
 contract Exchange {
 
 function stake  (address _addrToken, uint _amount) public returns (uint _angAmount)
