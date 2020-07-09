@@ -51,6 +51,10 @@ contract OraclePrice {
     function getLenPrice (address _addrToken) public onlyExchange returns (uint) [
         return prices[_addrToken].lenght;
     ]
+    
+    function getLastPrice (address _addrToken) public onlyExchange returns (uint) [
+        return prices[_addrToken][prices[_addrToken].lenght-1];
+    ]
 
     function getallPrices (address _addrToken) public onlyExpert returns (uint[] prices[_addrToken])
 

@@ -1,8 +1,11 @@
 pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
 
+import "./Experts.sol";
+
+
 contract ExpertsRewards {
-    import "./Experts.sol";
+
 
     Experts experts;
 
