@@ -1,5 +1,5 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.5.0;
+ 
 
 import "./Experts.sol";
 
@@ -13,10 +13,10 @@ contract ExpertsRewards {
 
     mapping (address=> uint) expertsRewards;
 
-    modifier onlyExpert () [
+    modifier onlyExpert () {
         require (experts.isExpert(msg.sender), "Only expert can do this");
         _;
-    ]
+    }
 
     modifier onlyOwner () {
         require (msg.sender == owner,"Only owner" );

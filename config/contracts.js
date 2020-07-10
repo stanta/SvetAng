@@ -22,18 +22,32 @@ module.exports = {
     //            when not specified
     // - explicit will only attempt to deploy the contracts that are explicitly specified inside the
     //            contracts section.
-    // strategy: 'implicit',
+    strategy: 'explicit',
 
     // minimalContractSize, when set to true, tells Embark to generate contract files without the heavy bytecodes
     // Using filteredFields lets you customize which field you want to filter out of the contract file (requires minimalContractSize: true)
-    // minimalContractSize: false,
+     minimalContractSize: true,
     // filteredFields: [],
 
     deploy: {
-      SimpleStorage: {
+      Experts: {
         fromIndex: 0,
-        args: [100]
-      }
+        args: []
+      },
+      
+      ExpertsRewards: {
+        fromIndex: 0,
+        args: []
+      },
+      OraclePrice: {
+        fromIndex: 0,
+        args: []
+      },
+      
+      Exchange: {
+        fromIndex: 0,
+        args: []
+      },
     }
   },
 

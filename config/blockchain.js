@@ -8,10 +8,11 @@ module.exports = {
   },
 
   development: {
-    client: 'ganache-cli',
+  //  client: 'ganache-cli', //ganache-cli
     clientConfig: {
       miningMode: 'dev' // Mode in which the node mines. Options: dev, auto, always, off
-    }
+    },
+ //   endpoint: 'http://127.0.0.1:8545'
   },
 
   privatenet: {

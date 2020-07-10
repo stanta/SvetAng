@@ -1,31 +1,39 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.5.0;
+ 
 //import ".embark/contracts/token/ERC20/ERC20Detailed.sol"
-import "./openzeppelin-contracts/contracts/token/ERC20/ERC20Capped";
-import "./OraclePrice";
+import "./openzeppelin-contracts/contracts/token/ERC20/ERC20Capped.sol";
+import "./OraclePrice.sol";
 
 contract Exchange {
     ERC20Capped BA;
     OraclePrice oraclePrice;
     address owner;
-    function stake  (address _addrToken, uint _amountBA1) public returns (uint _angAmount)
+    
+    modifier onlyOwner () {
+        require (msg.sender == owner,"Only owner" );
+        _;
+    }
+    
+
+
+    function stake  (address _addrToken, uint _stakeAmount) public 
         {
         // 1. calculate exchage rate
-        uint256 transferAmount = _amountBA1 * oraclePrice.getLastPrice(_addrToken);
+        uint256 transferAmount = _stakeAmount * oraclePrice.getLastPrice(_addrToken);
         // 2. transfer from staker to contract
         ERC20Capped BA1sell = ERC20Capped (_addrToken);
-        BA1sell.transferFrom(msg.sender, address(this), _amount); 
+        BA1sell.transferFrom(msg.sender, address(this), _stakeAmount); 
         // 3. transfer to staker
         BA.transfer(msg.sender, transferAmount );
 
         }
 
-    function withdraw (address _addrToken, uint _amount ) public returns (uint _tokenAmount)
+    function withdraw (address _addrToken, uint _wisdrAmount ) public 
         {
-        uint256 transferAmount = _amountBA1 * oraclePrice.getLastPrice(_addrToken);
+        uint256 transferAmount = _wisdrAmount * oraclePrice.getLastPrice(_addrToken);
         BA.transferFrom(msg.sender, address(this), transferAmount); 
         ERC20Capped BA1sell = ERC20Capped (_addrToken);
-        BA.transfer(msg.sender, _amount );
+        BA1sell.transfer(msg.sender, _wisdrAmount );
         }
 
     
@@ -41,7 +49,7 @@ contract Exchange {
 
     function setOwner(address _addr) public onlyOwner
         {
-        owner = _addrOwner;
+        owner = _addr;
 
         }
 }

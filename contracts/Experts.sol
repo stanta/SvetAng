@@ -1,19 +1,11 @@
-pragma solidity ^0.6.0;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.5.0;
+ 
 
 contract Experts {
     address owner;
+
     mapping (address => bool) public isExpert;
 
-    function setExperts (address _addrExp) public onlyOwner {
-        experts = Experts(_addrExp);
-    }
-
-
-    modifier onlyExpert () [
-        require (msg.sender, "Only expert can do this");
-        _;
-    ]
 
     modifier onlyOwner () {
         require (msg.sender == owner,"Only owner" );

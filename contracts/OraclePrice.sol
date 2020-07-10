@@ -1,8 +1,8 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./Experts";
-import "./ExpertsRewards";
+import "./Experts.sol";
+import "./ExpertsRewards.sol";
 
 contract OraclePrice {
 
@@ -14,25 +14,37 @@ contract OraclePrice {
     }
 
     mapping (address => PriceItem[]) public prices;
-    address[] tokens
+    address[] tokens;
 
     address owner;
     address exchange;
 
-    modifier onlyExpert () [
+    modifier onlyOwner () {
+        require (msg.sender == owner,"Only owner" );
+        _;
+    }
+
+    modifier onlyExpert () {
         require (experts.isExpert(msg.sender), "Only expert can do this");
         _;
-    ]
+    }
+    
+    modifier onlyExchange () {
+        require (msg.sender == exchange, "Only exchange" );
+        _;
+    }
 
     function setExpertsContr (address _addrExp) public onlyOwner {
         experts = Experts(_addrExp);
     }
     
-    function setExchange (address _addrExchange) public onlyOwner
+    function setExchange (address _addrExchange) public onlyOwner {
+        exchange = _addrExchange;
+    }
 
 
     function addPrice   (address _addrToken, uint _price ) public onlyExpert {
-        if (prices[_addrToken].lenght == 0) {
+        if (prices[_addrToken].length == 0) {
             tokens.push(_addrToken);
         }
         prices[_addrToken].push(PriceItem(_price, now));
@@ -48,17 +60,21 @@ contract OraclePrice {
 //todo  ?
     }
 
-    function getLenPrice (address _addrToken) public onlyExchange returns (uint) [
-        return prices[_addrToken].lenght;
-    ]
+    function getLenPrice (address _addrToken) public view onlyExchange returns (uint) {
+        return prices[_addrToken].length;
+    }
     
-    function getLastPrice (address _addrToken) public onlyExchange returns (uint) [
-        return prices[_addrToken][prices[_addrToken].lenght-1];
-    ]
+    function getLastPrice (address _addrToken) public view onlyExchange returns (uint) {
+        return prices[_addrToken][prices[_addrToken].length-1].price;
+    }
 
-    function getallPrices (address _addrToken) public onlyExpert returns (uint[] prices[_addrToken])
+    function getallPrices (address _addrToken) public view onlyExpert returns (PriceItem[] memory) {
+        return prices[_addrToken];
+    }
 
-    function getallTokens () public onlyExpert returns (address[] tokens)
+    function getallTokens () public view onlyExpert returns (address[] memory ) {
+        return tokens;
+    }
 
 
 
