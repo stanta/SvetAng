@@ -9,6 +9,10 @@ contract Exchange {
     OraclePrice oraclePrice;
     address owner;
     
+    constructor ()  public {
+        owner =  msg.sender;
+    }
+
     modifier onlyOwner () {
         require (msg.sender == owner,"Only owner" );
         _;

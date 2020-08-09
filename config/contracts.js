@@ -34,20 +34,33 @@ module.exports = {
         fromIndex: 0,
         args: []
       },
-      
-      ExpertsRewards: {
-        fromIndex: 0,
-        args: []
-      },
-      OraclePrice: {
-        fromIndex: 0,
-        args: []
-      },
-      
+
       Exchange: {
         fromIndex: 0,
-        args: []
+        args: [],
+
       },
+   /*
+      ExpertsRewards: {
+        fromIndex: 0,
+        args: [],
+        onDeploy: async ({contracts, web3, logger}) => {
+          await contracts.ExpertsRewards.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount});
+
+        }
+      },
+*/
+
+      OraclePrice: {
+        fromIndex: 0,
+        args: [], 
+        
+        }
+      }, 
+      afterDeploy: async ({contracts, web3, logger}) => {
+
+        await contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount});
+        await contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount});    
     }
   },
 

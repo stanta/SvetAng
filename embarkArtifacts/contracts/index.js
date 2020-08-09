@@ -1,0 +1,16 @@
+module.exports = {
+"ERC20Mintable": require('./ERC20Mintable.js').default,
+"ExpertPrices": require('./ExpertPrices.js').default,
+"ExpertsRewards": require('./ExpertsRewards.js').default,
+"MinterRole": require('./MinterRole.js').default,
+"IERC20": require('./IERC20.js').default,
+"ERC20Capped": require('./ERC20Capped.js').default,
+"ERC20": require('./ERC20.js').default,
+"Roles": require('./Roles.js').default,
+"Context": require('./Context.js').default,
+"SimpleStorage": require('./SimpleStorage.js').default,
+"SafeMath": require('./SafeMath.js').default,
+"OraclePrice": require('./OraclePrice.js').default,
+"Experts": require('./Experts.js').default,
+"Exchange": require('./Exchange.js').default,
+};

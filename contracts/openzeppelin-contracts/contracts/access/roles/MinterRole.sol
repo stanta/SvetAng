@@ -11,7 +11,7 @@ contract MinterRole is Context {
 
     Roles.Role private _minters;
 
-    constructor () internal {
+    constructor ()  public {
         _addMinter(_msgSender());
     }
 
