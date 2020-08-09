@@ -40,12 +40,14 @@ module.exports = {
   },
 
   externalnode: {
-    endpoint: "URL_OF_THE_NODE", // Endpoint of an node to connect to. Can be on localhost or on the internet
+    endpoint: "https://ropsten.infura.io/v3/3362483b5eab409ea69e99f99aefd67a", // Endpoint of an node to connect to. Can be on localhost or on the internet
     accounts: [
       {
-        mnemonic: "YOUR_MNEMONIC",
-        hdpath: "m/44'/60'/0'/0/",
-        numAddresses: "1"
+        //privateKeyFile: "./testnet/password",
+        privateKey: "622306b68d3ad3e9c73a2f847f50f97caf1eb611ac2047624959663837c4e9bd",// process.env.privKey,
+        //mnemonic: "YOUR_MNEMONIC",
+        //hdpath: "m/44'/60'/0'/0/",
+        //numAddresses: "1"
       }
     ]
   },

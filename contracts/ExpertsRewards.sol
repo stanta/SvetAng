@@ -11,6 +11,10 @@ contract ExpertsRewards {
 
     address owner;
 
+    constructor ()  public {
+        owner =  msg.sender;
+    }
+
     mapping (address=> uint) expertsRewards;
 
     modifier onlyExpert () {

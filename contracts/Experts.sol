@@ -4,6 +4,10 @@ pragma solidity ^0.6.1;
 contract Experts {
     address owner;
 
+    constructor ()  public {
+        owner =  msg.sender;
+    }
+
     mapping (address => bool) public isExpert;
 
 
