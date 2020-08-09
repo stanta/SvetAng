@@ -55,8 +55,17 @@ module.exports = {
         fromIndex: 0,
         args: [], 
         
-        }
+        },
+      
+
+      Faucet: {
+          fromIndex: 0,
+          args: [], 
+          
+          }        
       }, 
+
+
       afterDeploy: async ({contracts, web3, logger}) => {
 
         await contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount});
@@ -71,6 +80,8 @@ module.exports = {
   // merges with the settings in default
   // used with "embark run privatenet"
   privatenet: {},
+
+  
 
   // you can name an environment with specific settings and then specify with
   // "embark run custom_name" or "embark blockchain custom_name"

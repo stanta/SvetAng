@@ -19,7 +19,6 @@ contract Exchange {
     }
     
 
-
     function stake  (address _addrToken, uint _stakeAmount) public 
         {
         // 1. calculate exchage rate
