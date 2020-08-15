@@ -89,14 +89,26 @@ module.exports = {
         args: ["QUBtst", "QUB", 16], 
 
         },
+        ANGtst: {
+          instanceOf: 'TokTst',
+          fromIndex: 0,
+          args: ["ANGtst", "ANG", 18], 
+  
+          },
                        
     },
       afterDeploy: async ({contracts, web3, logger}) => {
         await contracts.Faucet.methods.setToken(contracts.DAItest.options.address).send({from: web3.eth.defaultAccount});
         await contracts.Faucet.methods.setToken(contracts.ALFtst.options.address).send({from: web3.eth.defaultAccount});
-        await contracts.Faucet.methods.setToken(contracts.QUBtst.options.address).send({from: web3.eth.defaultAccount});        
+        await contracts.Faucet.methods.setToken(contracts.QUBtst.options.address).send({from: web3.eth.defaultAccount});  
+        await contracts.Faucet.methods.setToken(contracts.ANGtst.options.address).send({from: web3.eth.defaultAccount});        
+      
+
         await contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount});
-        await contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount});    
+        await contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount});   
+        
+        await contracts.Exchange.methods.setBA(contracts.ANGtst.options.address).send({from: web3.eth.defaultAccount});
+        await contracts.Exchange.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount});
     }
   },
 

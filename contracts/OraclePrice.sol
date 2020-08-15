@@ -64,19 +64,19 @@ contract OraclePrice {
 //todo  ?
     }
 
-    function getLenPrice (address _addrToken) public view onlyExchange returns (uint) {
+    function getLenPrice (address _addrToken) public view  returns (uint) { //onlyExchange
         return prices[_addrToken].length;
     }
     
-    function getLastPrice (address _addrToken) public view onlyExchange returns (uint) {
+    function getLastPrice (address _addrToken) public view  returns (uint) { //onlyExchange
         return prices[_addrToken][prices[_addrToken].length-1].price;
     }
 
-    function getallPrices (address _addrToken) public view onlyExpert returns (PriceItem[] memory) {
+    function getallPrices (address _addrToken) public view  returns (PriceItem[] memory) { //onlyExpert
         return prices[_addrToken];
     }
 
-    function getallTokens () public view onlyExpert returns (address[] memory ) {
+    function getallTokens () public view  returns (address[] memory ) {  //onlyExpert
         return tokens;
     }
 

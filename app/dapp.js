@@ -4,7 +4,8 @@ import {TabContent, TabPane, Nav, NavItem, NavLink} from 'reactstrap';
 import classnames from 'classnames';
 
 import EmbarkJS from 'Embark/EmbarkJS';
-import Blockchain from './components/blockchain';
+import Stake from './components/Stake';
+import Withdraw from './components/Withdraw';
 import Whisper from './components/whisper';
 import Storage from './components/storage';
 import ENS from './components/ens';
@@ -72,32 +73,22 @@ class App extends React.Component {
       </div>);
     }
     return (<div>
-      <h3>Embark - Usage Example</h3>
+      <h3>SvetAng DeFi exchange</h3>
       <Nav tabs>
         <NavItem>
           <NavLink onClick={() => this.handleSelect('1')} className={classnames({ active: this.state.activeKey === '1' })}>
-            {this._renderStatus('Blockchain', this.state.blockchainEnabled)}
+            {this._renderStatus('Stake', this.state.blockchainEnabled)}
           </NavLink>
         </NavItem>
+
         <NavItem>
           <NavLink onClick={() => this.handleSelect('2')} className={classnames({ active: this.state.activeKey === '2' })}>
-            {this._renderStatus('Decentralized Storage', this.state.storageEnabled)}
+            {this._renderStatus('Withdraw', this.state.blockchainEnabled)}
           </NavLink>
         </NavItem>
-        <NavItem>
-          <NavLink onClick={() => this.handleSelect('3')} className={classnames({ active: this.state.activeKey === '3' })}>
-            {this._renderStatus('P2P communication (Whisper)', this.state.whisperEnabled)}
-          </NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink onClick={() => this.handleSelect('4')} className={classnames({ active: this.state.activeKey === '4' })}>
-            {this._renderStatus('Naming (ENS)', ensEnabled)}
-          </NavLink>
-        </NavItem>
-
-
+       
         <NavItem >
-          <NavLink onClick={() => this.handleSelect('5')} className={classnames({ active: this.state.activeKey === '5' })}>
+          <NavLink onClick={() => this.handleSelect('3')} className={classnames({ active: this.state.activeKey === '3' })}>
             {this._renderStatus('Faucet', this.state.blockchainEnabled)}
           </NavLink>
         </NavItem>
@@ -105,18 +96,12 @@ class App extends React.Component {
       </Nav>
       <TabContent activeTab={this.state.activeKey}>
         <TabPane tabId="1">
-          <Blockchain/>
+          <Stake/>
         </TabPane>
         <TabPane tabId="2">
-          <Storage enabled={this.state.storageEnabled}/>
-        </TabPane>
+          <Withdraw/>
+        </TabPane>   
         <TabPane tabId="3">
-          <Whisper enabled={this.state.whisperEnabled}/>
-        </TabPane>
-        <TabPane tabId="4">
-          <ENS enabled={ensEnabled}/>
-        </TabPane>
-        <TabPane tabId="5">
           <Faucet/>
         </TabPane>
       </TabContent>
