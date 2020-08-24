@@ -24,17 +24,14 @@ class Stake extends React.Component {
       valueSet: 10,
       getValue: "",
       logs: [],
-      addrBA1sell: "",
-      addrBA2buy: "",
-      amountBA1sell: "",
-      amountBA2buy: "",
+      addToken: "",
       decimals: 18,
       tokenPrice: 0,
       symbol: "",
       tokenList: [],
       isDeposited: 0,
       fullDeposited: 0,
-
+      sumToPurshase:0,
       curToken: "",
       OraclePrice:"",
       curOptstate:"" ,
@@ -91,7 +88,7 @@ class Stake extends React.Component {
     
     this.state.curToken =  EmbarkJS.Blockchain.Contract({
         abi: Options.options.jsonInterface,
-        address: this.state.getValue});
+        address: this.state.addToken});
     
           
     await this.state.curToken.methods.name().call().then(_value =>
@@ -107,45 +104,16 @@ class Stake extends React.Component {
               {
                 this.setState({decimals: _value});
               });
-    this._addToLog("token address: ", this.state.getValue );
+    this._addToLog("token address: ", this.state.addToken );
 
   //  * 3. get rates from oraclePrice and caclulate amounts
-  await this.state.OraclePrice.methods.getLastPrice(this.state.getValue).call().then(_value =>
+  await this.state.OraclePrice.methods.getLastPrice(this.state.addToken).call().then(_value =>
     {
       this.setState({tokenPrice: _value});
     });
   }
 
-  /*  
-  async registerDeposite(e) {
-    e.preventDefault();
-    await EmbarkJS.enableEthereum();
-    this.state.curOption =  EmbarkJS.Blockchain.Contract({
-                                    abi: Options.options.jsonInterface,
-                                    address: this.state.getValue});
-
-    this.state.curOption.methods.isHandMadeDeposite().send(); //({gas: gasAmount});
-
-    this._addToLog("Option deposited time: ", this.state.isDeposited);
-  }
-
-/*
-
-  async getValueDeposited(e) {
-    e.preventDefault();
-    
-    await EmbarkJS.enableEthereum();
-    this.state.curOption =  EmbarkJS.Blockchain.Contract({
-                                    abi: Options.options.jsonInterface,
-                                    address: this.state.getValue});
-
-    this.state.curOption.methods.isDeposited().call().then(_value => this.setState({ isDeposited: _value }));
-    
-    this._addToLog("Option deposited time: ", this.state.isDeposited);
-    
-  }
-*/
-    //   * 4. approve transfer amount of token by customer
+  //   * 4. approve transfer amount of token by customer
 
 
 async approve(e) {
@@ -153,91 +121,38 @@ async approve(e) {
     await EmbarkJS.enableEthereum();
     try {
 
-      this.state.ERC20 =  EmbarkJS.Blockchain.Contract({
+      const curToken =  EmbarkJS.Blockchain.Contract({
       abi: ERC20.options.jsonInterface,
-      address: this.state.tokenPrice
+      address: this.state.curToken
       });
       
-      //const decimals = await this.state.ERC20.methods.decimals().call();
-      const amountSD = web3.utils.toBN( this.state.sd1 * this.state. amountBA1sell / 100 );
+      const decimals = await curToken.methods.decimals().call();
+      const amount = web3.utils.toBN( this.state.sumToPurshase * 10 ** decimals );
   
-      this.state.ERC20.methods.approve(this.state.getValue, amountSD.toString()).send();
+      curToken.methods.approve(this.state.getValue, amount.toString()).send();
    }
    catch (err) {
      console.log (err);
    }
   }
-/*
-  async makeDeposite(e) {    
+
+  async makeStake(e) {    
     await EmbarkJS.enableEthereum();
     try {
-      this.state.curOption =  EmbarkJS.Blockchain.Contract({
+      const curToken =  EmbarkJS.Blockchain.Contract({
         abi: Options.options.jsonInterface,
         address: this.state.getValue
       });
+;
       
-      this.state.curOption.methods.makeDeposite().send();
+    const amount = web3.utils.toBN( this.state.sumToPurshase * 10 ** decimals );
+    curToken.methods.stake(amount).send();
    }
    catch (err) {
      console.log (err);
    }
   }
-  */
-
-  async approveFull(e) {
-    
-    await EmbarkJS.enableEthereum();
-    try {
-
-      this.state.ERC20 =  EmbarkJS.Blockchain.Contract({
-      abi: ERC20.options.jsonInterface,
-      address: this.state.addrBA1sell
-      });
-      
-      //const decimals = await this.state.ERC20.methods.decimals().call();
-      const amountSD = web3.utils.toBN( (100- this.state.sd1) * this.state.
-        amountBA1sell / 100 );
-  
-      this.state.ERC20.methods.approve(this.state.getValue, amountSD.toString()).send();
-   }
-   catch (err) {
-     console.log (err);
-   }
-  }
-
-  async finalFundOpt(e) {    
-    await EmbarkJS.enableEthereum();
-    try {
-      this.state.curOption =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
-        address: this.state.getValue
-      });
-      
-      this.state.curOption.methods.finalFundOpt().send();
-   }
-   catch (err) {
-     console.log (err);
-   }
-  }
-  
-  async withdrawSeller(e) {    
-    await EmbarkJS.enableEthereum();
-    try {
-      this.state.curOption =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
-        address: this.state.getValue
-      });
-      let amntWthdrSelBN = web3.utils.toWei (web3.utils.toBN(this.state.sumToWithdrawSel));
-    
-      this.state.curOption.methods.withdrawSeller(amntWthdrSelBN.toString()).send();
-   }
-   catch (err) {
-     console.log (err);
-   }
-  }
-  
-
-  render() {
+ render() {
     return (<React.Fragment>
         
         
@@ -279,33 +194,35 @@ async approve(e) {
             </p>}
           </FormGroup>
         </Form>
-        <h3> 2. Get token's data</h3>
+       <h3> 2. Staking </h3>
         <Form>
-          <FormGroup>
-            <Button color="primary" onClick={(e) => this.getValue(e)}>Get Value</Button>
-            <FormText color="muted">Click the button to get the option address value.</FormText>
-            {this.state.getValue && this.state.getValue !== 0 &&
-           <p>Current token is at  <span className="value font-weight-bold">{this.state.getValue}</span> <br />
-            
-           Description: {this.state.description}
-           <br /> 
-           ETH Address active to sell: {this.state.addrBA1sell } <br/>
-           ETH symbol active to sell: {this.state.symbolBA1 } <br/>
-           Amount active to sell: {this.state.amountBA1sell / 10**(this.state.decimalsBA1)} <br/>
-           Depositing active to sell: {this.state.sd1 } % <br/>
-           <br/>
-           Address active  to buy: {this.state.addrBA2buy  } <br/>
-           ETH symbol active to buy: {this.state.symbolBA2 } <br/>
-           Amount active to buy: {this.state.amountBA2buy / 10**(this.state.decimalsBA2) } <br/>
-           Depositing active to buy: {this.state.sd2 } % <br/>
-           <br/>
-           
-           </p>
-            }
-            
+          <FormGroup>               
+
+            <p>Current token  address value is <span className="value font-weight-bold">{this.state.getValue}</span></p>
+            <Input type = "number"
+                    key="sumToPurshase"
+                    step={'.0001'}
+                    // initialValues  = {this.state.amountBA1sell}
+                        name="sumToPurshase"
+                        placeholder="Sum in option tokens you want to buy option"                  
+                    onChange={(e) => this.handleChange(e)}/>   
+
+            <FormText >Please approve transfer to exchange  your sum of {this.state.symbol} tokens {this.state.sumToPurshase } to exchange for { this.state.sumToPurshase / this.state.tokenPrice} ANGs. </FormText>
+            <br/>
+            <Button color="primary" onClick={(e) => this.approveSD(e)}>
+              Approve transferFrom {
+                    this.state.sumToPurshase} of  {this.state.symbol} tokens
+            </Button>
+            <FormText color="muted">Click the button make approve.</FormText>
+
+              <br/>
+            <Button color="primary" onClick={(e) => this.makeStake(e)}>Make purshaising</Button>
+            <FormText color="muted">Click the button make purshaising.</FormText>
+
           </FormGroup>
         </Form>
-      
+
+   
        <h3> Logs </h3>
         <p> calls being made: </p>
         <div className="logs">

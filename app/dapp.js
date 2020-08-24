@@ -87,11 +87,7 @@ class App extends React.Component {
           </NavLink>
         </NavItem>
        
-        <NavItem >
-          <NavLink onClick={() => this.handleSelect('3')} className={classnames({ active: this.state.activeKey === '3' })}>
-            {this._renderStatus('Faucet', this.state.blockchainEnabled)}
-          </NavLink>
-        </NavItem>
+        
 
       </Nav>
       <TabContent activeTab={this.state.activeKey}>
@@ -101,12 +97,18 @@ class App extends React.Component {
         <TabPane tabId="2">
           <Withdraw/>
         </TabPane>   
-        <TabPane tabId="3">
-          <Faucet/>
-        </TabPane>
+
       </TabContent>
     </div>);
   }
 }
-
+/*<NavItem >
+          <NavLink onClick={() => this.handleSelect('3')} className={classnames({ active: this.state.activeKey === '3' })}>
+            {this._renderStatus('Faucet', this.state.blockchainEnabled)}
+          </NavLink>
+        </NavItem>
+        <TabPane tabId="3">
+          <Faucet/>
+        </TabPane>
+*/
 ReactDOM.render(<App/>, document.getElementById('app'));
