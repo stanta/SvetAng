@@ -97,6 +97,7 @@ module.exports = {
         await contracts.Faucet.methods.setToken(contracts.QUBtst.options.address).send({from: web3.eth.defaultAccount});  
         await contracts.Faucet.methods.setToken(contracts.ANGtst.options.address).send({from: web3.eth.defaultAccount});        
 
+        await contracts.Experts.methods.addExpert(web3.eth.defaultAccount).send({from: web3.eth.defaultAccount});
         await contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount});
         await contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount});   
 

@@ -6,7 +6,7 @@ import List from 'react-list-select';
 
 import OraclePrice from '../../embarkArtifacts/contracts/OraclePrice';
 
-import ERC20 from '../../embarkArtifacts/contracts/ERC20Detailed';
+import ERC20 from '../../embarkArtifacts/contracts/TokTst';
 /**
  * 1. get list of tokens from oraclePrice
  * 2. show list and customer choosing token to stake 
@@ -68,7 +68,7 @@ class Stake extends React.Component {
     let  account;
     await web3.eth.getAccounts().then(e => { account = e[0];  
       });
-    OraclePrice.methods.getallTokens(account).call().then(_value => this.setState({ tokenList: _value }));
+    OraclePrice.methods.getallTokens().call().then(_value => this.setState({ tokenList: _value }));
     
   }
   // * 2. show list and customer choosing token to stake 
@@ -87,8 +87,8 @@ class Stake extends React.Component {
     //MakeOptions.methods.getLast(account).call().then(_value => this.setState({ getValue: _value }));
     
     this.state.curToken =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
-        address: this.state.addToken});
+        abi: ERC20.options.jsonInterface,
+        address: this.state.getValue});
     
           
     await this.state.curToken.methods.name().call().then(_value =>
@@ -104,10 +104,10 @@ class Stake extends React.Component {
               {
                 this.setState({decimals: _value});
               });
-    this._addToLog("token address: ", this.state.addToken );
+    this._addToLog("token address: ", this.state.getValue );
 
   //  * 3. get rates from oraclePrice and caclulate amounts
-  await this.state.OraclePrice.methods.getLastPrice(this.state.addToken).call().then(_value =>
+  await this.state.OraclePrice.methods.getLastPrice(this.state.getValue).call().then(_value =>
     {
       this.setState({tokenPrice: _value});
     });
@@ -159,7 +159,7 @@ async approve(e) {
         <h3> 1. Choose token:</h3>
         <Form>
           <FormGroup>
-            <Button color="primary" onClick={(e) => this.getIOUList(e)}>Get my IOUs list</Button>
+            <Button color="primary" onClick={(e) => this.getallTokens(e)}>Get my tokens list</Button>
             <br />
             <List class="pointer"
                 items={this.state.tokenList}
@@ -169,7 +169,7 @@ async approve(e) {
           //      onClick={(selected) => {this.state.getValue = _this.props.children }}
                 onChange={(e) => this.handleChangeList(e)}/>
                 
-            <FormText color="muted">Or paste IOU Smart contract address </FormText>
+            <FormText color="muted">Or paste Token Smart contract address </FormText>
                   <Input type = "text"
                     key="getValue"
                 // initialValues  = {this.state.getValue}
@@ -179,17 +179,17 @@ async approve(e) {
                     onChange={(e) => this.handleChange(e)}/>
             <p>Current address value is <span className="value font-weight-bold">{this.state.getValue}</span></p>
             {this.state.getValue && this.state.getValue !== 0 &&
-            <Button color="primary" onClick={(e) => this.getValue(e)}>Get full IOU description</Button>
+            <Button color="primary" onClick={(e) => this.getValue(e)}>Get full token description</Button>
             }
-            <FormText color="muted">Click the button to get the IOU address value.</FormText>
+            <FormText color="muted">Click the button to get the token address value.</FormText>
             {this.state.getValue && this.state.getValue !== 0 &&
-            <p>Current IOU is at  <span className="value font-weight-bold">{this.state.getValue}</span> <br />
+            <p>Current token is at  <span className="value font-weight-bold">{this.state.getValue}</span> <br />
             <br/>
            Name: {this.state.name}
            <br /> 
             Symbol: {this.state.symbol } <br/>
-           Decimals: {this.state.decimals }
-          Price: {this.state.price} "ANG". <br/>
+            Decimals: {this.state.decimals } <br/>
+            Price: {this.state.tokenPrice} ANGs. <br/>
             
             </p>}
           </FormGroup>

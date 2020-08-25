@@ -395,4 +395,4 @@ class Withdraw  extends React.Component {
   }
 }
 
-export default SimpleOption;
+export default Withdraw;

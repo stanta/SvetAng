@@ -62,7 +62,7 @@ class faucet extends React.Component {
         <Form>
           <FormGroup>
             <Button color="primary" onClick={(e) => this.sendTokens(e)}>Get tokens</Button>
-            <FormText color="muted">Click the button to get 100 tokens UST and wETH. </FormText>
+            <FormText color="muted">Click the button to get 100 tokens for testing. </FormText>
             {this.state.addrs[0] !== 0  && this.state.addrs[1] !== 0 &&
             <p>Current tokens addresses value are <li><span className="value font-weight-bold">{this.state.addrs[0]} </span></li> <li><span className="value font-weight-bold">{this.state.addrs[1]} </span> </li>, and add this to your wallet </p>}
           </FormGroup>

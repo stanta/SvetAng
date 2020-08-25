@@ -5,6 +5,7 @@ import classnames from 'classnames';
 
 import EmbarkJS from 'Embark/EmbarkJS';
 import Stake from './components/Stake';
+import Faucet from './components/faucet';
 import Withdraw from './components/Withdraw';
 import Whisper from './components/whisper';
 import Storage from './components/storage';
@@ -87,7 +88,12 @@ class App extends React.Component {
           </NavLink>
         </NavItem>
        
-        
+        <NavItem>
+          <NavLink onClick={() => this.handleSelect('3')} className={classnames({ active: this.state.activeKey === '3' })}>
+            {this._renderStatus('Faucet', this.state.blockchainEnabled)}
+          </NavLink>
+        </NavItem>
+       
 
       </Nav>
       <TabContent activeTab={this.state.activeKey}>
@@ -97,7 +103,9 @@ class App extends React.Component {
         <TabPane tabId="2">
           <Withdraw/>
         </TabPane>   
-
+        <TabPane tabId="3">
+          <Faucet/>
+        </TabPane>   
       </TabContent>
     </div>);
   }
