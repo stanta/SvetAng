@@ -5,7 +5,7 @@ import {Form, FormGroup, Input, HelpBlock, Button, FormText} from 'reactstrap';
 import List from 'react-list-select';
 
 import OraclePrice from '../../embarkArtifacts/contracts/OraclePrice';
-
+import Exchange from '../../embarkArtifacts/contracts/Exchange';
 import ERC20 from '../../embarkArtifacts/contracts/TokTst';
 /**
  * 1. get list of tokens from oraclePrice
@@ -31,12 +31,13 @@ class Stake extends React.Component {
       tokenList: [],
       isDeposited: 0,
       fullDeposited: 0,
-      sumToPurshase:0,
+      sumtoStake:0,
       curToken: "",
       OraclePrice:"",
       curOptstate:"" ,
       ERC20: "" ,
-      sumToWithdrawSel: 0
+      sumToWithdrawSel: 0,
+      account:""
     };
   }
 
@@ -65,8 +66,7 @@ class Stake extends React.Component {
   async getallTokens(e) {
     e.preventDefault();
     await EmbarkJS.enableEthereum();
-    let  account;
-    await web3.eth.getAccounts().then(e => { account = e[0];  
+    await web3.eth.getAccounts().then(e => { this.state.account = e[0];  
       });
     OraclePrice.methods.getallTokens().call().then(_value => this.setState({ tokenList: _value }));
     
@@ -81,8 +81,8 @@ class Stake extends React.Component {
   async getValue(e) {
     e.preventDefault();
     await EmbarkJS.enableEthereum();
-    let  account;
-    await web3.eth.getAccounts().then(e => { account = e[0];  
+    
+    await web3.eth.getAccounts().then(e => { this.state.account = e[0];  
       });
     //MakeOptions.methods.getLast(account).call().then(_value => this.setState({ getValue: _value }));
     
@@ -107,7 +107,7 @@ class Stake extends React.Component {
     this._addToLog("token address: ", this.state.getValue );
 
   //  * 3. get rates from oraclePrice and caclulate amounts
-  await this.state.OraclePrice.methods.getLastPrice(this.state.getValue).call().then(_value =>
+  await OraclePrice.methods.getLastPrice(this.state.getValue).call().then(_value =>
     {
       this.setState({tokenPrice: _value});
     });
@@ -123,13 +123,13 @@ async approve(e) {
 
       const curToken =  EmbarkJS.Blockchain.Contract({
       abi: ERC20.options.jsonInterface,
-      address: this.state.curToken
+      address: this.state.getValue
       });
       
-      const decimals = await curToken.methods.decimals().call();
-      const amount = web3.utils.toBN( this.state.sumToPurshase * 10 ** decimals );
+      
+      const amount = web3.utils.toBN( this.state.sumtoStake * 10 ** this.state.decimals).toString() ;
   
-      curToken.methods.approve(this.state.getValue, amount.toString()).send();
+      curToken.methods.approve(Exchange.options.address , amount).send();
    }
    catch (err) {
      console.log (err);
@@ -139,14 +139,9 @@ async approve(e) {
   async makeStake(e) {    
     await EmbarkJS.enableEthereum();
     try {
-      const curToken =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
-        address: this.state.getValue
-      });
-;
       
-    const amount = web3.utils.toBN( this.state.sumToPurshase * 10 ** decimals );
-    curToken.methods.stake(amount).send();
+    const amount = web3.utils.toBN( this.state.sumtoStake * 10 ** this.state.decimals ).toString();
+    Exchange.methods.stake(this.state.getValue, amount).send();
    }
    catch (err) {
      console.log (err);
@@ -200,18 +195,18 @@ async approve(e) {
 
             <p>Current token  address value is <span className="value font-weight-bold">{this.state.getValue}</span></p>
             <Input type = "number"
-                    key="sumToPurshase"
+                    key="sumtoStake"
                     step={'.0001'}
                     // initialValues  = {this.state.amountBA1sell}
-                        name="sumToPurshase"
-                        placeholder="Sum in option tokens you want to buy option"                  
+                        name="sumtoStake"
+                        placeholder="Sum in  tokens you want to stake"                  
                     onChange={(e) => this.handleChange(e)}/>   
 
-            <FormText >Please approve transfer to exchange  your sum of {this.state.symbol} tokens {this.state.sumToPurshase } to exchange for { this.state.sumToPurshase / this.state.tokenPrice} ANGs. </FormText>
+            <FormText >Please approve transfer to exchange  your sum of {this.state.symbol} tokens {this.state.sumtoStake } to exchange for { this.state.sumtoStake / this.state.tokenPrice} ANGs. </FormText>
             <br/>
-            <Button color="primary" onClick={(e) => this.approveSD(e)}>
+            <Button color="primary" onClick={(e) => this.approve(e)}>
               Approve transferFrom {
-                    this.state.sumToPurshase} of  {this.state.symbol} tokens
+                    this.state.sumtoStake} of  {this.state.symbol} tokens
             </Button>
             <FormText color="muted">Click the button make approve.</FormText>
 

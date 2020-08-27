@@ -22,10 +22,12 @@ contract Exchange {
     function stake  (address _addrToken, uint _stakeAmount) public 
         {
         // 1. calculate exchage rate
-        uint256 transferAmount = _stakeAmount * oraclePrice.getLastPrice(_addrToken);
+        uint256 rate = oraclePrice.getLastPrice(_addrToken); 
+        require(rate > 0, "No price for this token" );
+        uint256 transferAmount = _stakeAmount / rate;
         // 2. transfer from staker to contract
-        ERC20Capped BA1sell = ERC20Capped (_addrToken);
-        BA1sell.transferFrom(msg.sender, address(this), _stakeAmount); 
+        ERC20Capped staking = ERC20Capped (_addrToken);
+        staking.transferFrom(msg.sender, address(this), _stakeAmount); 
         // 3. transfer to staker
         BA.transfer(msg.sender, transferAmount );
 
@@ -35,8 +37,8 @@ contract Exchange {
         {
         uint256 transferAmount = _wisdrAmount * oraclePrice.getLastPrice(_addrToken);
         BA.transferFrom(msg.sender, address(this), transferAmount); 
-        ERC20Capped BA1sell = ERC20Capped (_addrToken);
-        BA1sell.transfer(msg.sender, _wisdrAmount );
+        ERC20Capped staking = ERC20Capped (_addrToken);
+        staking.transfer(msg.sender, _wisdrAmount );
         }
 
     

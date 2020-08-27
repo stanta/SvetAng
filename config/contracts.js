@@ -107,6 +107,7 @@ module.exports = {
 
         await contracts.Exchange.methods.setBA(contracts.ANGtst.options.address).send({from: web3.eth.defaultAccount});
         await contracts.Exchange.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount});
+        await contracts.ANGtst.methods.transfer(contracts.Exchange.options.address, "1000000000000000000000000").send({from: web3.eth.defaultAccount});
     }
   },
 
