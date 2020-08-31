@@ -2,17 +2,20 @@ import EmbarkJS from 'Embark/EmbarkJS';
 
 import React from 'react';
 import {Form, FormGroup, Input, HelpBlock, Button, FormText} from 'reactstrap';
+import List from 'react-list-select';
 
-import ERC20 from '../../embarkArtifacts/contracts/ERC20Detailed';
-
+import OraclePrice from '../../embarkArtifacts/contracts/OraclePrice';
+import Exchange from '../../embarkArtifacts/contracts/Exchange';
+import ERC20 from '../../embarkArtifacts/contracts/TokTst';
 /**
  * 1. get list of tokens from oraclePrice
- * 2. show list and customer choosing token to stake
+ * 2. show list and customer choosing token to withdraw 
  * 3. get rates from oraclePrice and caclulate amounts
- * 4. approve transfer amount of ANG  by customer
+ * 4. approve transfer amount of token by customer
  * 5. Transfer amount of token from, transfer amoun of ANG to customer
  */
-class Withdraw  extends React.Component {
+
+class withdraw extends React.Component {
 
   constructor(props) {
     super(props);
@@ -21,26 +24,21 @@ class Withdraw  extends React.Component {
       valueSet: 10,
       getValue: "",
       logs: [],
-      addrBA1sell: "",
-      addrBA2buy: "",
-      amountBA1sell: "",
-      amountBA2buy: "",
-      decimalsBA1: 18,
-      decimalsBA2: 18,
-      symbolBA1: "",
-      symbolBA2: "",
-      sd1: 15,
-      sd2: 10,
-      expDays: 2,
-      expHours: 2,
-      description: "test",
-      optionsList: [],
+      addToken: "",
+      BA:"",
+      decimals: 18,
+      tokenPrice: 0,
+      symbol: "",
+      tokenList: [],
       isDeposited: 0,
       fullDeposited: 0,
-      curOption: "",
+      sumtowithdraw:0,
+      curToken: "",
+      OraclePrice:"",
       curOptstate:"" ,
       ERC20: "" ,
-      sumToWithdrawSel: 0
+      sumToWithdrawSel: 0,
+      account:""
     };
   }
 
@@ -65,324 +63,167 @@ class Withdraw  extends React.Component {
     this.setState({ logs: this.state.logs });
   }
 
-  async deployOption (e) {
-    
+//  * 1. get list of tokens from oraclePrice``
+  async getallTokens(e) {
     e.preventDefault();
     await EmbarkJS.enableEthereum();
-    let  account;
-    await web3.eth.getAccounts().then(e => { account = e[0];  
+    await web3.eth.getAccounts().then(e => { this.state.account = e[0];  
       });
-    const ERC20BA1sell =  EmbarkJS.Blockchain.Contract({
-      abi: ERC20.options.jsonInterface,
-      address: this.state.addrBA1sell
-      });
-    const ERC20BA2Buy  =  EmbarkJS.Blockchain.Contract({
-        abi: ERC20.options.jsonInterface,
-        address: this.state.addrBA2buy
-        });
-
-    this.state.decimalsBA1 = await  ERC20BA1sell.methods.decimals().call();
-    this.state.symbolBA1 = await  ERC20BA1sell.methods.symbol().call();
-    this.state.decimalsBA2 = await  ERC20BA2Buy.methods.decimals().call();
-    this.state.symbolBA2 = await  ERC20BA2Buy.methods.symbol().call();
-//web3.utils.toBN
+    OraclePrice.methods.getallTokens().call().then(_value => this.setState({ tokenList: _value }));
     
-    let amountBA1sell =  web3.utils.toBN(web3.utils.toWei (this.state.amountBA1sell));
-    let decimalsBA1 =  web3.utils.toBN(10**(this.state.decimalsBA1 - 18))
-    amountBA1sell =   amountBA1sell.mul(decimalsBA1);
-    let  amountBA2buy =  web3.utils.toBN(web3.utils.toWei (this.state.amountBA2buy));
-    let decimalsBA2 =  web3.utils.toBN(10**(this.state.decimalsBA2 - 18))
-    amountBA2buy = amountBA2buy.mul(decimalsBA2);
-    let expSecs = this.state.expDays*86400 + this.state.expHours *3600;
-    let gasAmount;
-    await MakeOptions.methods.makeOption(
-      this.state.addrBA1sell,
-      this.state.addrBA2buy,
-      amountBA1sell.toString(),
-      amountBA2buy.toString(),
-      parseInt(this.state.sd1, 10) ,
-      parseInt(this.state.sd2, 10),
-      expSecs.toString(),
-      this.state.description
-     ).estimateGas({from: account}).then(e => { gasAmount = e;  
-     }); ;
-    MakeOptions.methods.makeOption(
-                 this.state.addrBA1sell,
-                 this.state.addrBA2buy,
-                 amountBA1sell.toString(),
-                 amountBA2buy.toString(),
-                 parseInt(this.state.sd1, 10) ,
-                 parseInt(this.state.sd2, 10),
-                 expSecs.toString(),
-                 this.state.description
-                ).send({from:account, gas: gasAmount});
-    this._addToLog("MakeOptions.methods.MakeOptions: ", this.state.getValue);
-
   }
-
-
+  // * 2. show list and customer choosing token to withdraw 
+  handleChangeList(e) {
+    let keyVal = {}
+    keyVal["getValue"] = this.state.tokenList[e];
+    this.setState( keyVal );
+                 
+  }
   async getValue(e) {
     e.preventDefault();
     await EmbarkJS.enableEthereum();
-    let  account;
-    await web3.eth.getAccounts().then(e => { account = e[0];  
-      });
-    MakeOptions.methods.getLast(account).call().then(_value => this.setState({ getValue: _value }));
     
-    this.state.curOption =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
+    await web3.eth.getAccounts().then(e => { this.state.account = e[0];  
+      });
+    //MakeOptions.methods.getLast(account).call().then(_value => this.setState({ getValue: _value }));
+    
+    this.state.curToken =  EmbarkJS.Blockchain.Contract({
+        abi: ERC20.options.jsonInterface,
         address: this.state.getValue});
     
-    await this.state.curOption.methods.thisOpt().call().then(_value =>
+    let  addrBA; 
+    await Exchange.methods.getBA().call().then(_value =>
       {
-      const paramsToString = params => Object.entries(params).reduce((acc, [key, value], index, array) => `${acc}${key}=${encodeURIComponent(value)}${index !== (array.length - 1) ? '&' : ''}`, "");    
-      this.setState({addrBA1sell: _value.addrBA1sell});
-      this.setState({addrBA2buy: _value.addrBA2buy});
-      this.setState({amountBA1sell: _value.amountBA1sell});
-      this.setState({amountBA2buy: _value.amountBA2buy});
-      this.setState({sd1: _value.sd1});
-      this.setState({sd2: _value.sd2});
-      this.setState({expDays: _value.expDays});
-      this.setState({description: _value.description});
-      this.setState({isDeposited: _value.isDeposited});
-      this.setState({fullDeposited: _value.fullDeposited});
-      this.setState({ curOptstate: paramsToString(_value) })
+       addrBA = _value;
       });
-    this._addToLog("Option address: ", this.state.getValue );
-  }
-
     
-  async registerDeposite(e) {
-    e.preventDefault();
-    await EmbarkJS.enableEthereum();
-    this.state.curOption =  EmbarkJS.Blockchain.Contract({
-                                    abi: Options.options.jsonInterface,
-                                    address: this.state.getValue});
-
-    this.state.curOption.methods.isHandMadeDeposite().send(); //({gas: gasAmount});
-
-    this._addToLog("Option deposited time: ", this.state.isDeposited);
-  }
-
-/*
-
-  async getValueDeposited(e) {
-    e.preventDefault();
-    
-    await EmbarkJS.enableEthereum();
-    this.state.curOption =  EmbarkJS.Blockchain.Contract({
-                                    abi: Options.options.jsonInterface,
-                                    address: this.state.getValue});
-
-    this.state.curOption.methods.isDeposited().call().then(_value => this.setState({ isDeposited: _value }));
-    
-    this._addToLog("Option deposited time: ", this.state.isDeposited);
-    
-  }
-*/
-  async approveDep(e) {
-    
-    await EmbarkJS.enableEthereum();
-    try {
-
-      this.state.ERC20 =  EmbarkJS.Blockchain.Contract({
-      abi: ERC20.options.jsonInterface,
-      address: this.state.addrBA1sell
-      });
+    this.state.BA =  EmbarkJS.Blockchain.Contract({
+          abi: ERC20.options.jsonInterface,
+          address: addrBA});
       
-      //const decimals = await this.state.ERC20.methods.decimals().call();
-      const amountSD = web3.utils.toBN( this.state.sd1 * this.state. amountBA1sell / 100 );
-  
-      this.state.ERC20.methods.approve(this.state.getValue, amountSD.toString()).send();
-   }
-   catch (err) {
-     console.log (err);
-   }
+          
+    await this.state.curToken.methods.name().call().then(_value =>
+          {
+            this.setState({name: _value});
+          });
+        
+    await this.state.curToken.methods.symbol().call().then(_value =>
+            {
+              this.setState({symbol: _value});
+            });
+    await this.state.curToken.methods.decimals().call().then(_value =>
+              {
+                this.setState({decimals: _value});
+              });
+    this._addToLog("token address: ", this.state.getValue );
+
+  //  * 3. get rates from oraclePrice and caclulate amounts
+  await OraclePrice.methods.getLastPrice(this.state.getValue).call().then(_value =>
+    {
+      this.setState({tokenPrice: _value});
+    });
   }
 
-  async makeDeposite(e) {    
-    await EmbarkJS.enableEthereum();
-    try {
-      this.state.curOption =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
-        address: this.state.getValue
-      });
-      
-      this.state.curOption.methods.makeDeposite().send();
-   }
-   catch (err) {
-     console.log (err);
-   }
-  }
-  
+  //   * 4. approve transfer amount of token by customer
 
-  async approveFull(e) {
+
+async approve(e) {
     
     await EmbarkJS.enableEthereum();
     try {
 
-      this.state.ERC20 =  EmbarkJS.Blockchain.Contract({
-      abi: ERC20.options.jsonInterface,
-      address: this.state.addrBA1sell
-      });
       
-      //const decimals = await this.state.ERC20.methods.decimals().call();
-      const amountSD = web3.utils.toBN( (100- this.state.sd1) * this.state.
-        amountBA1sell / 100 );
+      const amount = web3.utils.toBN( this.state.sumtowithdraw * 10 ** this.state.decimals / this.state.tokenPrice ).toString() ;
   
-      this.state.ERC20.methods.approve(this.state.getValue, amountSD.toString()).send();
+      this.state.BA.methods.approve(Exchange.options.address , amount).send();
    }
    catch (err) {
      console.log (err);
    }
   }
 
-  async finalFundOpt(e) {    
+  async makewithdraw(e) {    
     await EmbarkJS.enableEthereum();
     try {
-      this.state.curOption =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
-        address: this.state.getValue
-      });
       
-      this.state.curOption.methods.finalFundOpt().send();
+    const amount = web3.utils.toBN( this.state.sumtowithdraw * 10 ** this.state.decimals ).toString();
+    Exchange.methods.withdraw(this.state.getValue, amount).send();
    }
    catch (err) {
      console.log (err);
    }
   }
-  
-  async withdrawSeller(e) {    
-    await EmbarkJS.enableEthereum();
-    try {
-      this.state.curOption =  EmbarkJS.Blockchain.Contract({
-        abi: Options.options.jsonInterface,
-        address: this.state.getValue
-      });
-      let amntWthdrSelBN = web3.utils.toWei (web3.utils.toBN(this.state.sumToWithdrawSel));
-    
-      this.state.curOption.methods.withdrawSeller(amntWthdrSelBN.toString()).send();
-   }
-   catch (err) {
-     console.log (err);
-   }
-  }
-  
-
-  render() {
+ render() {
     return (<React.Fragment>
         
         
-        <h3> 1. Deploy option    </h3>
-          <Form>
-                <FormGroup>
-                <FormText color="muted">ERC20 token address of your base active (to sell)</FormText>
-                  <Input type = "text"
-                    key="addrBA1sell"
-                // initialValues  = {this.state.addrBA1sell}
-                    name="addrBA1sell"
-                    placeholder="Ethereum address 0x0..."                  
-                    onChange={(e) => this.handleChange(e)}/>
-                    
-                 <FormText color="muted">Amount to sell in your tokens</FormText>  
-                 <Input type = "number"
-                    step={'.0001'}
-                    key="amountBA1sell"
-                    // initialValues  = {this.state.amountBA1sell}
-                        name="amountBA1sell"
-                        placeholder="Sum in tokens you want to sell: 10.0001"                  
-                    onChange={(e) => this.handleChange(e)}/>                  
-                  
-                 <FormText color="muted"> Percentage You offer for secure deposite  </FormText>  
-                 <Input type = "number"
-                    step={'.01'}
-                      key="sd1"
-                      // initialValues  = {this.state.sd1}
-                      name="sd1"
-                      placeholder="example in %: 10.01"                       
-                    onChange={(e) => this.handleChange(e)}/>               
-
-                 <FormText color="muted">ERC20 token address of base active to buy</FormText>
-                  <Input type = "text"
-                      key="addrBA2buy"
-                    // initialValues  = {this.state.addrBA2buy}
-                      name="addrBA2buy"
-                      placeholder="Ethereum address 0x0..."  
-                    onChange={(e) => this.handleChange(e)}/>
-                    
-                 <FormText color="muted">Amount to buy in 'their' tokens</FormText>  
-                 <Input type = "number"
-                    step={'.0001'}
-                    key="amountBA2buy"
-                    // initialValues  = {this.state.amountBA1sell}
-                    name="amountBA2buy"
-                    placeholder="Sum in tokens you want to buy for your tokens: 10.0001 "                  
-                
-                    onChange={(e) => this.handleChange(e)}/>                  
-                  
-                 <FormText color="muted"> Percentage You ASK  for secure deposite from buyers </FormText>  
-                 
-                 <Input type = "number"
-                    key="sd2"
-                    step={'.01'}
-                  // initialValues  = {this.state.sd1}
-                    name="sd2"
-                    placeholder="example in %: 10.04"                    
-                    onChange={(e) => this.handleChange(e)}/>         
-
-                  <FormText color="muted"> Calendar (actronomical) days ... </FormText>  
-                 <Input type = "number"
-                    key="expDays"
-                    // initialValues  = {this.state.sd1}
-                      name="expDays"
-                      placeholder="2"   
-                    onChange={(e) => this.handleChange(e)}/>         
-        <FormText color="muted"> ... and hours before mature the option after funded by YOU </FormText>  
-                 <Input type = "number"
-                    key="expHours"
-                    // initialValues  = {this.state.sd1}
-                      step={'.01'}
-                      name="expHours"
-                      placeholder="2.25"                    
-                    onChange={(e) => this.handleChange(e)}/> 
-                <FormText color="muted">Description for option </FormText>
-                  <Input type = "text"
-                      key="description"
-                      // initialValues  = {this.state.addrBA2buy}
-                      name="description"
-                      placeholder="description here... "  
-                    onChange={(e) => this.handleChange(e)}/>
-                  <br />
-                <Button color="primary" onClick={(e) => this.deployOption(e)}>Deploy option </Button>
-                </FormGroup>
-          </Form>
-          <h3> 2. Get the current option address value</h3>
+        <h3> 1. Choose token:</h3>
         <Form>
           <FormGroup>
-            <Button color="primary" onClick={(e) => this.getValue(e)}>Get Value</Button>
-            <FormText color="muted">Click the button to get the option address value.</FormText>
+            <Button color="primary" onClick={(e) => this.getallTokens(e)}>Get my tokens list</Button>
+            <br />
+            <List class="pointer"
+                items={this.state.tokenList}
+            //  selected={[0]}
+            //    disabled={[4]}
+                multiple={false}
+          //      onClick={(selected) => {this.state.getValue = _this.props.children }}
+                onChange={(e) => this.handleChangeList(e)}/>
+                
+            <FormText color="muted">Or paste Token Smart contract address </FormText>
+                  <Input type = "text"
+                    key="getValue"
+                // initialValues  = {this.state.getValue}
+                    name="getValue"
+                    placeholder="Ethereum smart contract address 0x..."
+                   // initial// initialValues  = {this.state.getValue}
+                    onChange={(e) => this.handleChange(e)}/>
+            <p>Current address value is <span className="value font-weight-bold">{this.state.getValue}</span></p>
             {this.state.getValue && this.state.getValue !== 0 &&
-           <p>Current option is at  <span className="value font-weight-bold">{this.state.getValue}</span> <br />
-            
-           Description: {this.state.description}
-           <br /> 
-           ETH Address active to sell: {this.state.addrBA1sell } <br/>
-           ETH symbol active to sell: {this.state.symbolBA1 } <br/>
-           Amount active to sell: {this.state.amountBA1sell / 10**(this.state.decimalsBA1)} <br/>
-           Depositing active to sell: {this.state.sd1 } % <br/>
-           <br/>
-           Address active  to buy: {this.state.addrBA2buy  } <br/>
-           ETH symbol active to buy: {this.state.symbolBA2 } <br/>
-           Amount active to buy: {this.state.amountBA2buy / 10**(this.state.decimalsBA2) } <br/>
-           Depositing active to buy: {this.state.sd2 } % <br/>
-           <br/>
-           
-           </p>
+            <Button color="primary" onClick={(e) => this.getValue(e)}>Get full token description</Button>
             }
+            <FormText color="muted">Click the button to get the token address value.</FormText>
+            {this.state.getValue && this.state.getValue !== 0 &&
+            <p>Current token is at  <span className="value font-weight-bold">{this.state.getValue}</span> <br />
+            <br/>
+           Name: {this.state.name}
+           <br /> 
+            Symbol: {this.state.symbol } <br/>
+            Decimals: {this.state.decimals } <br/>
+            Price: {this.state.tokenPrice} ANGs. <br/>
             
+            </p>}
           </FormGroup>
         </Form>
-      
+       <h3> 2. Withdraw </h3>
+        <Form>
+          <FormGroup>               
+
+            <p>Current token  address value is <span className="value font-weight-bold">{this.state.getValue}</span></p>
+            <Input type = "number"
+                    key="sumtowithdraw"
+                    step={'.0001'}
+                    // initialValues  = {this.state.amountBA1sell}
+                        name="sumtowithdraw"
+                        placeholder="Sum in  tokens you want to withdraw"                  
+                    onChange={(e) => this.handleChange(e)}/>   
+
+            <FormText >Please approve transfer { this.state.sumtowithdraw / this.state.tokenPrice} sum of ANG tokens {this.state.sumtowithdraw } to exchange for {this.state.sumtowithdraw}{this.state.symbol} tokens. </FormText>
+            <br/>
+            <Button color="primary" onClick={(e) => this.approve(e)}>
+              Approve transferFrom {
+                    this.state.sumtowithdraw / this.state.tokenPrice} of  ANG tokens
+            </Button>
+            <FormText color="muted">Click the button make approve.</FormText>
+
+              <br/>
+            <Button color="primary" onClick={(e) => this.makewithdraw(e)}>Make withdraw</Button>
+            <FormText color="muted">Click the button to withdraw.</FormText>
+
+          </FormGroup>
+        </Form>
+
+   
        <h3> Logs </h3>
         <p> calls being made: </p>
         <div className="logs">
@@ -395,4 +236,4 @@ class Withdraw  extends React.Component {
   }
 }
 
-export default Withdraw;
+export default withdraw;

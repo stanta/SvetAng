@@ -35,10 +35,15 @@ contract Exchange {
 
     function withdraw (address _addrToken, uint _wisdrAmount ) public 
         {
-        uint256 transferAmount = _wisdrAmount * oraclePrice.getLastPrice(_addrToken);
-        BA.transferFrom(msg.sender, address(this), transferAmount); 
+        // 1. calculate exchage rate
+        uint256 rate = oraclePrice.getLastPrice(_addrToken); 
+        require(rate > 0, "No price for this token" );
+        uint256 transferAmount = _wisdrAmount / rate;
+        // 2. transfer from staker to contract
         ERC20Capped staking = ERC20Capped (_addrToken);
-        staking.transfer(msg.sender, _wisdrAmount );
+        staking.transfer(msg.sender, _wisdrAmount); 
+        // 3. transfer to staker
+        BA.transferFrom(msg.sender, address(this), transferAmount );
         }
 
     
@@ -51,6 +56,11 @@ contract Exchange {
         {
         BA = ERC20Capped(_addr);
         }
+    function getBA() public returns (address)
+        {
+        return address(BA);
+        }
+
 
     function setOwner(address _addr) public onlyOwner
         {
