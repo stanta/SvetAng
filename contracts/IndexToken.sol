@@ -8,8 +8,11 @@ contract IndexToken is ERC20Detailed {
     * makes ERC20 compatible index token 
      */
     struct Index { // index components abiencoded
-      address addrActive;
-      uint256 amount;      
+      address addrActive1;
+      address addrActive2;
+      uint256 amount1;      
+      uint256 amount2;      
+      
     }
 
     Index[] public activeList ;
@@ -28,10 +31,18 @@ contract IndexToken is ERC20Detailed {
               18 )  //decimals            
             public {
       _mint(_emitter, 1 ether );
+      owner = msg.sender;
     }
 
-    function addActive (address _addrActive,  uint256 _amount) public onlyOwner {
-        activeList.push(Index(_addrActive, _amount));
+    function addActive (
+                        address _addrActive1, 
+                        address _addrActive2, 
+                        uint256 _amount1, 
+                        uint256 _amount2) public onlyOwner {
+        activeList.push(Index(_addrActive1, 
+                              _addrActive2,
+                              _amount1, 
+                              _amount2));
 
     }
 

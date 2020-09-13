@@ -1,7 +1,7 @@
 {
-  "name": "embark_demo",
-  "version": "6.0.0",
-  "description": "Demo DApp for Embark",
+  "name": "SvevBoard",
+  "version": "0.0.3",
+  "description": "SvevBoard",
   "homepage": "https://github.com/embarklabs/embark/tree/master/dapps/templates/demo#readme",
   "bugs": "https://github.com/embarklabs/embark/issues",
   "scripts": {
@@ -41,6 +41,8 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.9.13",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "embark-pipeline": "^6.0.0",
     "react-ga": "^2.7.0",
     "react-list-select": "^0.4.1"
