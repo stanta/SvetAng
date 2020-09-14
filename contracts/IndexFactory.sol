@@ -30,7 +30,8 @@ contract IndexFactory {
     IUniswapV2Factory uniswapV2Factory;
     IUniswapV2Router02 uniswapV2Router02;
     uint16 miningDelay;
-    uint8 discount;
+    uint8 discount = 2; //% 
+    mapping (address => uint) liquidity; 
 
     modifier onlyOwner () {
       require(msg.sender == owner, "Only owner can do this");
@@ -56,7 +57,7 @@ contract IndexFactory {
                         address _addrActive1, 
                         address _addrActive2, 
                         uint256 _amount1, 
-                        uint256 _amount2) public returns (uint256 amountRes1, uint256 amountRes2, uint256 liquidity) { 
+                        uint256 _amount2) public returns (uint256 amountRes1, uint256 amountRes2) { 
         IndexToken indexT = IndexToken(_addrIndex);
         indexT.addActive(_addrActive1, 
                         _addrActive2,
@@ -64,15 +65,23 @@ contract IndexFactory {
                         _amount2);
 
         // here wee need connection to Uniswap
-        address pair = uniswapV2Factory.getPair(_addrActive1, _addrActive2);
-        if (pair == address(0x0)) {
-            //create pair 
-            pair = uniswapV2Factory.createPair(_addrActive1, _addrActive2);
-            //todo setFeeTo ??
-        }
 
+        
+        ERC20 a1 = ERC20 (_addrActive1);
+        require(a1.transferFrom(msg.sender, address(this), _amount1), 'transferFrom failed.');
+
+        
+        require(a1.approve(address(uniswapV2Router02), _amount1), 'approve Active1 failed.');
+
+        // amountOutMin must be retrieved from an oracle of some kind
+        address[] memory path = new address[](2);
+        path[0] = _addrActive1;
+        path[1] = _addrActive2;
+        uniswapV2Router02.swapExactTokensForETH(_amount1,_amount2 * uint256(discount) /100, path, msg.sender, block.timestamp);
+        
         //send liquidity  
-        ( amountRes1, amountRes2, liquidity) = uniswapV2Router02.addLiquidity(
+        uint liqCurr;
+        ( amountRes1, amountRes2, liqCurr) = uniswapV2Router02.addLiquidity(
                      _addrActive1,
                      _addrActive2,
                      _amount1, //uint amountADesired,
@@ -82,6 +91,7 @@ contract IndexFactory {
                      address (this),
                      block.timestamp + miningDelay
                     ) ;
+        liquidity [address(indexT)] += liqCurr;
 
     }
 
