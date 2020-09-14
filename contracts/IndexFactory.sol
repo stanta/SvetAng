@@ -29,9 +29,9 @@ contract IndexFactory {
 
     IUniswapV2Factory uniswapV2Factory;
     IUniswapV2Router02 uniswapV2Router02;
-    uint16 miningDelay;
-    uint8 discount = 2; //% 
-    mapping (address => uint) liquidity; 
+    uint16 miningDelay = 600; //secs
+    uint8 discount = 98; //% 
+    mapping (address => mapping (address =>  uint)) liquidity; 
 
     modifier onlyOwner () {
       require(msg.sender == owner, "Only owner can do this");
@@ -54,8 +54,8 @@ contract IndexFactory {
     }
 
     function addActive (address _addrIndex, 
-                        address _addrActive1, 
-                        address _addrActive2, 
+                        address _addrActive1, //DAI
+                        address _addrActive2,  // token
                         uint256 _amount1, 
                         uint256 _amount2) public returns (uint256 amountRes1, uint256 amountRes2) { 
         IndexToken indexT = IndexToken(_addrIndex);
@@ -84,14 +84,39 @@ contract IndexFactory {
         ( amountRes1, amountRes2, liqCurr) = uniswapV2Router02.addLiquidity(
                      _addrActive1,
                      _addrActive2,
-                     _amount1, //uint amountADesired,
+                    0,// _amount1, //uint amountADesired,
                      _amount2, //uint amountBDesired,
-                     _amount1 * uint256(discount) /100,
+                    0,// _amount1 * uint256(discount) /100,
                      _amount2 * uint256(discount) /100,
                      address (this),
                      block.timestamp + miningDelay
                     ) ;
-        liquidity [address(indexT)] += liqCurr;
+        liquidity [_addrIndex][_addrActive2] += liqCurr;
+
+    }
+
+    function getActive (address _addrIndex,
+                        address _addrActive1, //dai
+                        address _addrActive2,  //token
+                        uint256 _amount1 
+                        ) internal returns (uint256 amountRes1, uint256 amountRes2) { 
+
+        // here wee need connection to Uniswap        
+        //return liquidity  
+        require(liquidity [ _addrIndex][_addrActive2] > 0 , "no liquiduty on this index");
+        uint liqCurr =  liquidity [ _addrIndex][_addrActive2];
+        liquidity [ _addrIndex][_addrActive2] = 0;
+        
+        ( amountRes1, amountRes2) = uniswapV2Router02.removeLiquidity(
+                     _addrActive1,
+                     _addrActive2,
+                     liqCurr,
+                     _amount1, //gets DAI directly
+                      0, 
+                     address (msg.sender),
+                     block.timestamp + miningDelay
+                    ) ;
+        
 
     }
 
