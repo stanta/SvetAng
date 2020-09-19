@@ -47,22 +47,11 @@ contract IndexFactory {
         discount = _discount;
     }
 
-    function makeIndex (string memory _name, 
-                        string  memory _symbol)  
-                        public  returns (address) {
-        return address(new IndexToken (_name, _symbol, msg.sender));
-    }
-
-    function addActive (address _addrIndex, 
+    function fill (address _addrIndex, 
                         address _addrActive1, //DAI
                         address _addrActive2,  // token
                         uint256 _amount1, 
                         uint256 _amount2) public returns (uint256 amountRes1, uint256 amountRes2) { 
-        IndexToken indexT = IndexToken(_addrIndex);
-        indexT.addActive(_addrActive1, 
-                        _addrActive2,
-                        _amount1, 
-                        _amount2);
 
         // here wee need connection to Uniswap
 
@@ -95,7 +84,7 @@ contract IndexFactory {
 
     }
 
-    function getActive (address _addrIndex,
+    function withdraw (address _addrIndex,
                         address _addrActive1, //dai
                         address _addrActive2,  //token
                         uint256 _amount1 

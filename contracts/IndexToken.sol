@@ -15,44 +15,23 @@ contract IndexToken is ERC20Detailed {
       
     }
 
-    Index[] public activeList ;
-
-    address owner;
-
-    modifier onlyOwner () {
-      require(msg.sender == owner, "Only owner can do this");
-      _;
-    }
+    Index[] public activesList ;
 
 
-    constructor (string memory _name, string memory _symbol, address _emitter ) 
+    constructor (string memory _name, string memory _symbol, Index[] memory _activesList ) 
         ERC20Detailed(_name,  //name
               _symbol, //symbol
               18 )  //decimals            
             public {
-      _mint(_emitter, 1 ether );
-      owner = msg.sender;
+      activesList = _activesList;
     }
 
-    function addActive (
-                        address _addrActive1, 
-                        address _addrActive2, 
-                        uint256 _amount1, 
-                        uint256 _amount2) public onlyOwner {
-        activeList.push(Index(_addrActive1, 
-                              _addrActive2,
-                              _amount1, 
-                              _amount2));
 
+
+    function getActivesList() public view returns (Index[] memory) {
+      return activesList;
     }
 
-    function getActiveList() public view returns (Index[] memory) {
-      return activeList;
-    }
-
-      function getActiveListLen() public view returns (uint256) {
-      return activeList.length;
-    }
 
 
 }
