@@ -1,10 +1,10 @@
 pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
-
+import "./interfaces/iOraclePrice.sol";
 import "./Experts.sol";
 import "./ExpertsRewards.sol";
 
-contract OraclePrice {
+contract OraclePrice is iOraclePrice {
 
     Experts experts;
 
@@ -13,13 +13,13 @@ contract OraclePrice {
         uint time;
     }
 
-    mapping (address => PriceItem[]) public prices;
+    mapping (address => PriceItem[])  prices;
     address[] tokens;
 
     address owner;
     address exchange;
 
-    constructor ()  public {
+    constructor () internal  {
         owner =  msg.sender;
     }
 
@@ -46,8 +46,12 @@ contract OraclePrice {
         exchange = _addrExchange;
     }
 
+    function setNewOwner (address _newOwner) public onlyOwner {
+        owner = _newOwner;
+    }
 
-    function addPrice   (address _addrToken, uint _price ) public onlyExpert {
+
+    function addPrice   (address _addrToken, uint _price ) external override onlyExpert {
         if (prices[_addrToken].length == 0) {
             tokens.push(_addrToken);
         }
@@ -60,23 +64,17 @@ contract OraclePrice {
         owner = _addrOwner;
     }
 
-    function delToken   (address _addrToken) public onlyOwner {
-//todo  ?
-    }
 
-    function getLenPrice (address _addrToken) public view  returns (uint) { //onlyExchange
+    function getLenPrice (address _addrToken) external override view  returns (uint) { //onlyExchange
         return prices[_addrToken].length;
     }
     
-    function getLastPrice (address _addrToken) public view  returns (uint) { //onlyExchange
+    function getLastPrice (address _addrToken) external override view  returns (uint) { //onlyExchange
         return prices[_addrToken][prices[_addrToken].length-1].price;
     }
 
-    function getallPrices (address _addrToken) public view  returns (PriceItem[] memory) { //onlyExpert
-        return prices[_addrToken];
-    }
 
-    function getallTokens () public view  returns (address[] memory ) {  //onlyExpert
+    function getallTokens () external override view  returns (address[] memory ) {  //onlyExpert
         return tokens;
     }
 

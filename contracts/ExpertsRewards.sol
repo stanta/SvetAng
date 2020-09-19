@@ -27,7 +27,7 @@ contract ExpertsRewards {
         _;
     }
 
-    function setOwner(address _addrOwner) public onlyOwner {
+    function setNewOwner(address _addrOwner) public onlyOwner {
         owner = _addrOwner;
     }
 

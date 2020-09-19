@@ -15,6 +15,11 @@ contract Experts {
         require (msg.sender == owner,"Only owner" );
         _;
     }
+    
+    function setNewOwner (address _newOwner) public onlyOwner {
+        owner = _newOwner;
+    }
+
 
     function addExpert  (address _addrExp) public onlyOwner {
         isExpert [_addrExp] = true;

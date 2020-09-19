@@ -2,15 +2,20 @@ pragma solidity ^0.6.1;
  
 //import ".embark/contracts/token/ERC20/ERC20Detailed.sol"
 import "./openzeppelin-contracts/contracts/token/ERC20/ERC20Capped.sol";
-import "./OraclePrice.sol";
+import "./interfaces/iOraclePrice.sol";
+
 
 contract Exchange {
     ERC20Capped BA;
-    OraclePrice oraclePrice;
+    iOraclePrice oraclePrice;
     address owner;
     
     constructor ()  public {
         owner =  msg.sender;
+    }
+
+    function setNewOwner (address _newOwner) public onlyOwner {
+        owner = _newOwner;
     }
 
     modifier onlyOwner () {
@@ -49,7 +54,7 @@ contract Exchange {
     
     function setPriceOracle(address _addr) public onlyOwner
         {
-        oraclePrice = OraclePrice(_addr);
+        oraclePrice = iOraclePrice(_addr);
         }
 
     function setBA(address _addr) public onlyOwner

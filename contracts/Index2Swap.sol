@@ -1,11 +1,17 @@
 pragma solidity ^0.6.1;
+import "./interfaces/iIndex2Swap.sol";
 import "./IndexToken.sol";
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
+import "./interfaces/iOraclePrice.sol";
 
+
+import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
+import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 
-contract IndexFactory {
+contract Index2Swap is iIndex2Swap {
+    using SafeMath  for uint;
+
     /**
     *     SvetSwap
     * 1. Client wants to buy an index. 
@@ -26,32 +32,51 @@ contract IndexFactory {
      */
 
     address owner;
+    iOraclePrice oraclePrice;
+    ERC20 svetT;
 
     IUniswapV2Factory uniswapV2Factory;
     IUniswapV2Router02 uniswapV2Router02;
+    
     uint16 miningDelay = 600; //secs
     uint8 discount = 98; //% 
     mapping (address => mapping (address =>  uint)) liquidity; 
+
+    constructor () internal  {
+        owner = msg.sender;
+    }
 
     modifier onlyOwner () {
       require(msg.sender == owner, "Only owner can do this");
       _;
     }
 
-    function setIUniswapV2 (address _addrFact, address _addrRout, uint8 _discount, uint16 _miningDelay) public onlyOwner {
+    function setNewOwner (address _newOwner) public onlyOwner {
+        owner = _newOwner;
+    }
+
+    function setSwap (address _addrFact, address _addrRout, uint8 _discount, uint16 _miningDelay) public onlyOwner {
 
         require(_discount  > 0 && _addrFact != address (0x0) && _addrRout != address (0x0), "in setIUniswapV2 all must !=0");
         uniswapV2Factory = IUniswapV2Factory (_addrFact);
         uniswapV2Router02 = IUniswapV2Router02 (_addrRout);
         miningDelay = _miningDelay;
         discount = _discount;
+
     }
+
+    function set ( address _svetT, address _oraclePrice) public onlyOwner {
+
+            svetT = ERC20(_svetT);
+            oraclePrice = iOraclePrice (_oraclePrice);
+        }
+
 
     function fill (address _addrIndex, 
                         address _addrActive1, //DAI
                         address _addrActive2,  // token
                         uint256 _amount1, 
-                        uint256 _amount2) public returns (uint256 amountRes1, uint256 amountRes2) { 
+                        uint256 _amount2) external override returns (uint256 amountRes1, uint256 amountRes2) { 
 
         // here wee need connection to Uniswap
 
@@ -88,18 +113,25 @@ contract IndexFactory {
                         address _addrActive1, //dai
                         address _addrActive2,  //token
                         uint256 _amount1 
-                        ) internal returns (uint256 amountRes1, uint256 amountRes2) { 
+                        ) external override returns (uint256 amountRes1, uint256 amountRes2) { 
 
         // here wee need connection to Uniswap        
         //return liquidity  
-        require(liquidity [ _addrIndex][_addrActive2] > 0 , "no liquiduty on this index");
-        uint liqCurr =  liquidity [ _addrIndex][_addrActive2];
-        liquidity [ _addrIndex][_addrActive2] = 0;
-        
+    
+
+        address curPairAddr = uniswapV2Factory.getPair(_addrActive1, _addrActive2);
+        require(curPairAddr != address(0), "No pair");        
+        IUniswapV2Pair curPair = IUniswapV2Pair (curPairAddr);
+        (uint112 reserve1,,) = curPair.getReserves();
+
+        uint needLiq = _amount1.mul(curPair.totalSupply()).div(reserve1);
+        require(liquidity [ _addrIndex][_addrActive2] - needLiq > 0 , "no liquidity on this index");
+        liquidity [ _addrIndex][_addrActive2] -= needLiq;
+
         ( amountRes1, amountRes2) = uniswapV2Router02.removeLiquidity(
                      _addrActive1,
                      _addrActive2,
-                     liqCurr,
+                     needLiq,
                      _amount1, //gets DAI directly
                       0, 
                      address (msg.sender),
@@ -109,4 +141,11 @@ contract IndexFactory {
 
     }
 
+    function buySvet () external payable {
+        uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
+        require(priceSvet > 0, "No price");
+        svetT.transfer(msg.sender,msg.value/priceSvet);
+
+    }
+    
 }

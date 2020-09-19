@@ -11,6 +11,11 @@ contract ExpertPrices {
    constructor ()  public {
         owner =  msg.sender;
     }
+
+   function setNewOwner (address _newOwner) public onlyOwner {
+        owner = _newOwner;
+    }
+
     /**    
      * TODO 
         1. experts puts prices from their ETH accounts
