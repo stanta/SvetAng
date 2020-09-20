@@ -7,7 +7,10 @@ contract IndexToken is IIndexToken, ERC20 {
     /**
     * makes ERC20 compatible index token 
      */
-
+    struct Index { 
+      address addrActive; // addr of active's token
+      uint256 amount; // in wei            
+    }
 
     Index[] private activesList ;
 
@@ -54,11 +57,11 @@ contract IndexToken is IIndexToken, ERC20 {
     }
 
 
-    constructor (string memory name, string memory symbol, Index[] memory _activesList ) 
+    constructor (string memory __name, string memory __symbol, Index[] memory _activesList ) 
         //decimals            
             public {
-        _name = name;
-        _symbol = symbol;
+        _name = __name;
+        _symbol = __symbol;
         _decimals = 18;
         activesList = _activesList;
     }

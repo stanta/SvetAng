@@ -1,8 +1,8 @@
 pragma solidity ^0.6.1;
 import "./interfaces/iIndex2Swap.sol";
-import "./IndexToken.sol";
+import "./interfaces/iIndextoken.sol";
 import "./interfaces/iOraclePrice.sol";
-
+import "./openzeppelin-contracts/contracts/math/SafeMath.sol";
 
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
@@ -33,13 +33,18 @@ contract Index2Swap is iIndex2Swap {
 
     address owner;
     iOraclePrice oraclePrice;
-    ERC20 svetT;
+    IERC20 svetT;
 
     IUniswapV2Factory uniswapV2Factory;
     IUniswapV2Router02 uniswapV2Router02;
     
     uint16 miningDelay = 600; //secs
     uint8 discount = 98; //% 
+    
+    struct Index { 
+      address addrActive; // addr of active's token
+      uint256 amount; // in wei            
+    }
     mapping (address => mapping (address =>  uint)) liquidity; 
 
     constructor () internal  {
@@ -67,7 +72,7 @@ contract Index2Swap is iIndex2Swap {
 
     function set ( address _svetT, address _oraclePrice) public onlyOwner {
 
-            svetT = ERC20(_svetT);
+            svetT = IERC20(_svetT);
             oraclePrice = iOraclePrice (_oraclePrice);
         }
 
@@ -81,7 +86,7 @@ contract Index2Swap is iIndex2Swap {
         // here wee need connection to Uniswap
 
         
-        ERC20 a1 = ERC20 (_addrActive1);
+        IERC20 a1 = IERC20 (_addrActive1);
         require(a1.transferFrom(msg.sender, address(this), _amount1), 'transferFrom failed.');
 
         
@@ -91,7 +96,7 @@ contract Index2Swap is iIndex2Swap {
         address[] memory path = new address[](2);
         path[0] = _addrActive1;
         path[1] = _addrActive2;
-        uniswapV2Router02.swapExactTokensForETH(_amount1,_amount2 * uint256(discount) /100, path, msg.sender, block.timestamp);
+        uniswapV2Router02.swapTokensForExactTokens(_amount1,_amount2 * uint256(discount) /100, path, msg.sender, block.timestamp);
         
         //send liquidity  
         uint liqCurr;
@@ -101,11 +106,41 @@ contract Index2Swap is iIndex2Swap {
                     0,// _amount1, //uint amountADesired,
                      _amount2, //uint amountBDesired,
                     0,// _amount1 * uint256(discount) /100,
-                     _amount2 * uint256(discount) /100,
+                     _amount2.mul(uint(discount)).div(uint(100)),
                      address (this),
                      block.timestamp + miningDelay
                     ) ;
         liquidity [_addrIndex][_addrActive2] += liqCurr;
+
+    }
+
+    function fillETH (address _addrIndex,                        
+                        address _addrActive2,  // token
+                        uint256 _amount1, 
+                        uint256 _amount2) external  override returns (uint256 amountRes1, uint256 amountRes2) { 
+
+        // here wee need connection to Uniswap
+
+        address wETH = uniswapV2Router02.WETH();
+        // amountOutMin must be retrieved from an oracle of some kind
+        address[] memory path = new address[](2);
+        path[0] = wETH;
+        path[1] = _addrActive2;
+        uniswapV2Router02.swapETHForExactTokens{ value: _amount1 }( _amount2, path, address (this), block.timestamp + miningDelay);
+        
+        //send liquidity  
+        uint liqCurr;
+        ( amountRes1, amountRes2, liqCurr) = uniswapV2Router02.addLiquidity(
+                     wETH,
+                     _addrActive2,
+                    0,// _amount1, //uint amountADesired,
+                     _amount2, //uint amountBDesired,
+                    0,// _amount1 * uint256(discount) /100,
+                    _amount2.mul(uint(discount)).div(uint(100)),
+                    address (this),
+                     block.timestamp + miningDelay
+                    ) ;
+        liquidity [_addrIndex][_addrActive2].add( liqCurr);
 
     }
 
@@ -126,7 +161,7 @@ contract Index2Swap is iIndex2Swap {
 
         uint needLiq = _amount1.mul(curPair.totalSupply()).div(reserve1);
         require(liquidity [ _addrIndex][_addrActive2] - needLiq > 0 , "no liquidity on this index");
-        liquidity [ _addrIndex][_addrActive2] -= needLiq;
+        liquidity [ _addrIndex][_addrActive2].sub(needLiq);
 
         ( amountRes1, amountRes2) = uniswapV2Router02.removeLiquidity(
                      _addrActive1,
@@ -141,11 +176,36 @@ contract Index2Swap is iIndex2Swap {
 
     }
 
-    function buySvet () external payable {
+
+    function buySvetEth () public payable {
         uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
         require(priceSvet > 0, "No price");
-        svetT.transfer(msg.sender,msg.value/priceSvet);
+        svetT.transfer(msg.sender,msg.value.div (priceSvet)); //prices in ether
 
     }
-    
+
+
+    function buyIndexforSvetEth (uint _amount, address _indexT) public {
+        // _amount - amount of index to buy
+        uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
+        // uint priceEth =  oraclePrice.getLastPrice(uniswapV2Router02.WETH());
+        iIndexToken index = iIndexToken(_indexT);
+        Index[] memory activites = index.getActivesList();
+
+        for (uint8 i = 0; i<activities.length; i++) {
+            uint priceAct = oraclePrice.getLastPrice(activities[i].addrActive); //if prices in Ether
+            uint amountT = activities[i].amount.mul(_amount);
+            uint  totPriceAct = amountT.mil( priceAct); //if prices in Ether
+            address(msg.sender).transfer(totPriceAct.div(priceSvet));
+
+         (uint256 amountRes1, uint256 amountRes2) = fillETH (
+             _indexT, 
+            activities[i].addrActive,  //
+            amountT.div(priceAct), // ethers to put
+            amountT //tokens to get 
+            ) ;
+        }
+
+
+    }
 }
