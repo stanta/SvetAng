@@ -2,7 +2,7 @@ pragma solidity ^0.6.1;
 import "./interfaces/iIndex2Swap.sol";
 import "./interfaces/iIndextoken.sol";
 import "./interfaces/iOraclePrice.sol";
-import "./openzeppelin-contracts/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
 import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
@@ -41,10 +41,7 @@ contract Index2Swap is iIndex2Swap {
     uint16 miningDelay = 600; //secs
     uint8 discount = 98; //% 
     
-    struct Index { 
-      address addrActive; // addr of active's token
-      uint256 amount; // in wei            
-    }
+
     mapping (address => mapping (address =>  uint)) liquidity; 
 
     constructor () internal  {
@@ -117,7 +114,7 @@ contract Index2Swap is iIndex2Swap {
     function fillETH (address _addrIndex,                        
                         address _addrActive2,  // token
                         uint256 _amount1, 
-                        uint256 _amount2) external  override returns (uint256 amountRes1, uint256 amountRes2) { 
+                        uint256 _amount2) public  override returns (uint256 amountRes1, uint256 amountRes2) { 
 
         // here wee need connection to Uniswap
 
@@ -177,7 +174,7 @@ contract Index2Swap is iIndex2Swap {
     }
 
 
-    function buySvetEth () public payable {
+    function buySvet4Eth () public payable {
         uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
         require(priceSvet > 0, "No price");
         svetT.transfer(msg.sender,msg.value.div (priceSvet)); //prices in ether
@@ -185,26 +182,29 @@ contract Index2Swap is iIndex2Swap {
     }
 
 
-    function buyIndexforSvetEth (uint _amount, address _indexT) public {
+    function buyIndexforSvetEth (uint _amount, address _indexT) public returns (uint256 amountRes1, uint256 amountRes2){
+        
         // _amount - amount of index to buy
         uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
         uint priceEth =  oraclePrice.getLastPrice(uniswapV2Router02.WETH());
         iIndexToken index = iIndexToken(_indexT);
-        Index[] memory activites = index.getActivesList();
-
-        for (uint8 i = 0; i<activities.length; i++) {
-            uint priceAct = oraclePrice.getLastPrice(activities[i].addrActive).div(priceEth); //if prices in USD
-            uint amountT = activities[i].amount.mul(_amount);
-            uint  totPriceAct = amountT.mul( priceAct); //
+        uint actLen = index. getActivesLen();
+        for (uint8 i = 0; i<actLen; i++) {
+            (address addrActive, uint256 amount) = index.getActivesItem(i);
+            uint priceAct = oraclePrice.getLastPrice(addrActive).div(priceEth); //if prices in USD
+            amount = amount.mul(_amount);
+            uint  totPriceAct = amount.mul( priceAct); //
             // need ti be approved first for all sum! 
-            address(msg.sender).transfer(totPriceAct.div(priceSvet));
-
-            (uint256 amountRes1, uint256 amountRes2) = fillETH (
+            address payable buyer =  payable (msg.sender);
+            buyer.transfer(totPriceAct.div(priceSvet));
+            (uint256 amountRet1, uint256 amountRet2) = fillETH (
              _indexT, 
-            activities[i].addrActive,  //
-            amountT.div(priceAct), // ethers to put
-            amountT //tokens to get 
+            addrActive,  //
+            amount.div(priceAct), // ethers to put
+            amount //tokens to get 
             ) ;
+            amountRes1 += amountRet1;
+            amountRes2 += amountRet2;
         }
 
 

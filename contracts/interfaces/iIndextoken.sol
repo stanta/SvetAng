@@ -1,13 +1,14 @@
 pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
-import "../openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+  
 interface iIndexToken is IERC20 {
+    struct Index { 
+      address addrActive; // addr of active's token
+      uint256 amount; // in wei            
+    }
 
-
-    function name() external view returns (string memory) ;
-    function symbol() external view returns (string memory);
-    function decimals() external view returns (uint8); 
     function getActivesList() external view returns (Index[] memory) ;
-
+    function getActivesLen() external  view returns (uint) ;
+    function getActivesItem(uint ) external override view returns (address ,uint );
 }
