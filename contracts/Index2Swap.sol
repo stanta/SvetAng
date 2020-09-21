@@ -188,17 +188,18 @@ contract Index2Swap is iIndex2Swap {
     function buyIndexforSvetEth (uint _amount, address _indexT) public {
         // _amount - amount of index to buy
         uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
-        // uint priceEth =  oraclePrice.getLastPrice(uniswapV2Router02.WETH());
+        uint priceEth =  oraclePrice.getLastPrice(uniswapV2Router02.WETH());
         iIndexToken index = iIndexToken(_indexT);
         Index[] memory activites = index.getActivesList();
 
         for (uint8 i = 0; i<activities.length; i++) {
-            uint priceAct = oraclePrice.getLastPrice(activities[i].addrActive); //if prices in Ether
+            uint priceAct = oraclePrice.getLastPrice(activities[i].addrActive).div(priceEth); //if prices in USD
             uint amountT = activities[i].amount.mul(_amount);
-            uint  totPriceAct = amountT.mil( priceAct); //if prices in Ether
+            uint  totPriceAct = amountT.mul( priceAct); //
+            // need ti be approved first for all sum! 
             address(msg.sender).transfer(totPriceAct.div(priceSvet));
 
-         (uint256 amountRes1, uint256 amountRes2) = fillETH (
+            (uint256 amountRes1, uint256 amountRes2) = fillETH (
              _indexT, 
             activities[i].addrActive,  //
             amountT.div(priceAct), // ethers to put
