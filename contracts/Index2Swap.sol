@@ -39,7 +39,7 @@ contract Index2Swap  {
     IUniswapV2Router02 uniswapV2Router02;
     
     uint16 miningDelay = 600; //secs
-    uint8 discount = 98; //% 
+    uint8 discount = 99; //% 
     
 
     mapping (address => mapping (address =>  uint)) liquidity; 
@@ -169,21 +169,39 @@ contract Index2Swap  {
                       0, 
                      _whom,
                      block.timestamp + miningDelay
-                    ) ;
-        
-
+                    );
     }
-
-    
 
 
     function buySvet4Eth () public payable {
+        uint priceEth =  oraclePrice.getLastPrice(uniswapV2Router02.WETH());
+        require(priceEth > 0, "No price Eth");
         uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
-        require(priceSvet > 0, "No price");
-        svetT.transfer(msg.sender,msg.value.div (priceSvet)); //prices in ether
+        require(priceSvet > 0, "No price Svet");
+        svetT.transfer(msg.sender,msg.value.div(priceEth).div(priceSvet)); //prices in ether
 
     }
 
+    function withdrEth4Svet (uint _amount) public {
+        uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
+        address wETH = uniswapV2Router02.WETH();
+        uint priceEth =  oraclePrice.getLastPrice(wETH);
+        require(priceSvet > 0, "No price Svet");
+        require(priceEth > 0, "No price Eth");
+        svetT.transferFrom(msg.sender, address(this), _amount); //prices in ether
+        uint amount = _amount.mul(priceSvet).div(priceEth);
+        address[] memory path = new address[](2);
+        path[0] = wETH;
+        path[1] = wETH;
+        uniswapV2Router02.swapTokensForExactETH(
+             _amount, 
+             amount.mul(discount), 
+             path, 
+             address (this), 
+             block.timestamp + miningDelay);
+        payable(msg.sender).transfer(amount);
+
+    }
 
     function buyIndexforSvetEth (uint _amount, address _indexT) public returns (uint256 amountRes1, uint256 amountRes2){
         
