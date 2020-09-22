@@ -2,7 +2,7 @@ pragma solidity ^0.6.1;
 
 
 interface iIndex2Swap  {
-    function fill (address _addrIndex, 
+  /*  function fill (address _addrIndex, 
                         address _addrActive1, //DAI
                         address _addrActive2,  // token
                         uint256 _amount1, 
@@ -19,5 +19,5 @@ interface iIndex2Swap  {
                         address _addrActive2,  //token
                         uint256 _amount1 
                         ) external  returns (uint256 amountRes1, uint256 amountRes2) ;
-
+*/
 }

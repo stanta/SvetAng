@@ -9,7 +9,7 @@ import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 
-contract Index2Swap is iIndex2Swap {
+contract Index2Swap  {
     using SafeMath  for uint;
 
     /**
@@ -73,12 +73,12 @@ contract Index2Swap is iIndex2Swap {
             oraclePrice = iOraclePrice (_oraclePrice);
         }
 
-
+/*
     function fill (address _addrIndex, 
                         address _addrActive1, //DAI
                         address _addrActive2,  // token
                         uint256 _amount1, 
-                        uint256 _amount2) external override returns (uint256 amountRes1, uint256 amountRes2) { 
+                        uint256 _amount2) in1 override returns (uint256 amountRes1, uint256 amountRes2) { 
 
         // here wee need connection to Uniswap
 
@@ -110,11 +110,11 @@ contract Index2Swap is iIndex2Swap {
         liquidity [_addrIndex][_addrActive2] += liqCurr;
 
     }
-
+*/
     function fillETH (address _addrIndex,                        
                         address _addrActive2,  // token
                         uint256 _amount1, 
-                        uint256 _amount2) public  override returns (uint256 amountRes1, uint256 amountRes2) { 
+                        uint256 _amount2) internal   returns (uint256 amountRes1, uint256 amountRes2) { 
 
         // here wee need connection to Uniswap
 
@@ -142,10 +142,11 @@ contract Index2Swap is iIndex2Swap {
     }
 
     function withdraw (address _addrIndex,
-                        address _addrActive1, //dai
+                        address _addrActive1, //dai, weth
                         address _addrActive2,  //token
-                        uint256 _amount1 
-                        ) external override returns (uint256 amountRes1, uint256 amountRes2) { 
+                        uint256 _amount1 ,
+                        address _whom                        
+                        ) internal returns (uint256 amountRes1, uint256 amountRes2) { 
 
         // here wee need connection to Uniswap        
         //return liquidity  
@@ -166,12 +167,14 @@ contract Index2Swap is iIndex2Swap {
                      needLiq,
                      _amount1, //gets DAI directly
                       0, 
-                     address (msg.sender),
+                     _whom,
                      block.timestamp + miningDelay
                     ) ;
         
 
     }
+
+    
 
 
     function buySvet4Eth () public payable {
@@ -188,15 +191,15 @@ contract Index2Swap is iIndex2Swap {
         uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
         uint priceEth =  oraclePrice.getLastPrice(uniswapV2Router02.WETH());
         iIndexToken index = iIndexToken(_indexT);
-        uint actLen = index. getActivesLen();
+        
+        uint actLen = index.getActivesLen();
+        uint  totPriceActSv;
         for (uint8 i = 0; i<actLen; i++) {
             (address addrActive, uint256 amount) = index.getActivesItem(i);
             uint priceAct = oraclePrice.getLastPrice(addrActive).div(priceEth); //if prices in USD
             amount = amount.mul(_amount);
-            uint  totPriceAct = amount.mul( priceAct); //
+             totPriceActSv += amount.mul( priceAct.div(priceSvet)); //
             // need ti be approved first for all sum! 
-            address payable buyer =  payable (msg.sender);
-            buyer.transfer(totPriceAct.div(priceSvet));
             (uint256 amountRet1, uint256 amountRet2) = fillETH (
              _indexT, 
             addrActive,  //
@@ -206,7 +209,35 @@ contract Index2Swap is iIndex2Swap {
             amountRes1 += amountRet1;
             amountRes2 += amountRet2;
         }
+        svetT.transferFrom(msg.sender, address(this),totPriceActSv);
+        index.mint(msg.sender, _amount);
 
+    }
 
+    function sellIndexforSvet (uint _amount, address _indexT) public returns (uint256 amountRes1, uint256 amountRes2){
+        address wETH = uniswapV2Router02.WETH();
+        uint priceSvet =  oraclePrice.getLastPrice(address(svetT));
+        uint priceEth =  oraclePrice.getLastPrice(wETH);
+        iIndexToken index = iIndexToken(_indexT);
+        
+        uint  totPriceActSv;
+        uint actLen = index. getActivesLen();
+        for (uint8 i = 0; i<actLen; i++) {
+            (address addrActive, uint256 amount) = index.getActivesItem(i);
+            uint priceAct = oraclePrice.getLastPrice(addrActive).div(priceEth); //if prices in USD
+            amount = amount.mul(_amount);
+            totPriceActSv += amount.mul( priceAct.div(priceSvet)); //
+            (uint256 amountRet1, uint256 amountRet2) = withdraw (
+            _indexT, 
+            wETH, 
+            addrActive,  //
+            amount, //tokens to get 
+            address (this)) ;
+            amountRes1 -= amountRet1;
+            amountRes2 -= amountRet2;
+        }
+        index.burnFrom(msg.sender, _amount);
+        svetT.transfer(msg.sender, totPriceActSv);
+        
     }
 }

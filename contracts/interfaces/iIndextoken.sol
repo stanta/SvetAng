@@ -10,5 +10,8 @@ interface iIndexToken is IERC20 {
 
     function getActivesList() external view returns (Index[] memory) ;
     function getActivesLen() external  view returns (uint) ;
-    function getActivesItem(uint ) external override view returns (address ,uint );
+    function getActivesItem(uint ) external  view returns (address ,uint );
+    function burn(uint256 amount) external;
+    function burnFrom(address account, uint256 amount) external ;
+    function mint(address account, uint256 amount) external  returns (bool);
 }
