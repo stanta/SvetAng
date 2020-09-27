@@ -11,10 +11,14 @@ contract ExpertPrices {
    constructor ()  public {
         owner =  msg.sender;
     }
-
+    modifier onlyOwner () {
+        require (msg.sender == owner,"Only owner" );
+        _;
+    }
    function setNewOwner (address _newOwner) public onlyOwner {
         owner = _newOwner;
     }
+    
 
     /**    
      * TODO 

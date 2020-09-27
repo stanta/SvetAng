@@ -1,25 +1,25 @@
 pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
-import "./interfaces/iOraclePrice.sol";
+import "./interfaces/iOracleamount.sol";
 import "./Experts.sol";
 import "./ExpertsRewards.sol";
 
-contract OraclePrice is iOraclePrice {
+contract Oracleamount is iOracleamount {
 
     Experts experts;
 
-    struct PriceItem {
-        uint price;
+    struct amountItem { //circulation amounts
+        uint amount;
         uint time;
     }
 
-    mapping (address => PriceItem[])  prices;
+    mapping (address => amountItem[])  amounts;
     address[] tokens;
 
     address owner;
     address exchange;
 
-    constructor () internal  {
+    constructor ()  iOracleamount() public {
         owner =  msg.sender;
     }
 
@@ -51,11 +51,11 @@ contract OraclePrice is iOraclePrice {
     }
 
 
-    function addPrice   (address _addrToken, uint _price ) external override onlyExpert {
-        if (prices[_addrToken].length == 0) {
+    function addamount   (address _addrToken, uint _amount ) external override onlyExpert {
+        if (amounts[_addrToken].length == 0) {
             tokens.push(_addrToken);
         }
-        prices[_addrToken].push(PriceItem(_price, now));
+        amounts[_addrToken].push(amountItem(_amount, now));
 
     }
 
@@ -65,13 +65,13 @@ contract OraclePrice is iOraclePrice {
     }
 
 
-    function getLenPrice (address _addrToken) external override view  returns (uint) { //onlyExchange
-        return prices[_addrToken].length;
+    function getLenamount (address _addrToken) external override view  returns (uint) { //onlyExchange
+        return amounts[_addrToken].length;
     }
     
-    function getLastPrice (address _addrToken) external override view  returns (uint) { //onlyExchange
-        require(prices[_addrToken].length > 0, "No price for this token");
-        return prices[_addrToken][prices[_addrToken].length-1].price;
+    function getLastamount (address _addrToken) external override view  returns (uint) { //onlyExchange
+        require(amounts[_addrToken].length > 0, "No amount for this token");
+        return amounts[_addrToken][amounts[_addrToken].length-1].amount;
     }
 
 
@@ -80,7 +80,7 @@ contract OraclePrice is iOraclePrice {
     }
 
     function delToken   (address _addrToken) onlyOwner external override {
-        delete prices[_addrToken];
+        delete amounts[_addrToken];
     }
  
 
