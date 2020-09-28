@@ -19,7 +19,7 @@ contract OraclePrice is iOraclePrice {
     address owner;
     address exchange;
 
-    constructor () internal  {
+    constructor () public  {
         owner =  msg.sender;
     }
 

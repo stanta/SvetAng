@@ -56,8 +56,32 @@ module.exports = {
         args: [], 
         
         },
+      Oracleamount: {
+          fromIndex: 0,
+          args: [], 
+          
+          },
+      Index2Swap: {
+            fromIndex: 0,
+            args: [], 
+            
+            },
+      IndexFactory: {
+            fromIndex: 0,
+            args: [], 
+            },
+      Lstorage: {
+              fromIndex: 0,
+              args: [], 
+              },
 
-        Faucet: {
+      IndexStorage: {
+              fromIndex: 0,
+              args: [], 
+              
+              },
+
+      Faucet: {
           fromIndex: 0,
           args: [], 
           
@@ -83,7 +107,7 @@ module.exports = {
         args: ["QUBtst", "QUB", 16], 
 
         },
-        ANGtst: {
+      ANGtst: {
           instanceOf: 'TokTst',
           fromIndex: 0,
           args: ["ANGtst", "ANG", 18], 

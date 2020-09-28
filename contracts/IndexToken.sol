@@ -26,7 +26,7 @@ contract IndexToken is iIndexToken, ERC20 {
     constructor (string memory _name, string memory _symbol, address[] memory _activesAddr, uint[] memory _activAm ) ERC20(_name, _symbol)
         //decimals            
             public {
-
+                    
         _decimals = 18;
         for (uint8 i=0; i<_activesAddr.length; i++) {
                 activesList.push(Index(_activesAddr[i], _activAm[i]));

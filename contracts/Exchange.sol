@@ -61,7 +61,7 @@ contract Exchange {
         {
         BA = ERC20Capped(_addr);
         }
-    function getBA() public returns (address)
+    function getBA() public view returns (address)
         {
         return address(BA);
         }

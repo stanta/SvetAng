@@ -1,11 +1,13 @@
 pragma solidity ^0.6.1;
-import "./interfaces/iIndex2Swap.sol";
+//import "./interfaces/iIndex2Swap.sol";
 import "./interfaces/iIndextoken.sol";
 import "./interfaces/iOraclePrice.sol";
+import "./interfaces/iLstorage.sol";
+
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol';
-import '@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol';
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 
@@ -33,6 +35,7 @@ contract Index2Swap  {
 
     address owner;
     iOraclePrice oraclePrice;
+    iLstorage lstorage;
     IERC20 svetT;
 
     IUniswapV2Factory uniswapV2Factory;
@@ -42,9 +45,8 @@ contract Index2Swap  {
     uint8 discount = 99; //% 
     
 
-    mapping (address => mapping (address =>  uint)) liquidity; 
 
-    constructor () internal  {
+    constructor () public  {
         owner = msg.sender;
     }
 
@@ -67,10 +69,11 @@ contract Index2Swap  {
 
     }
 
-    function set ( address _svetT, address _oraclePrice) public onlyOwner {
+    function set ( address _svetT, address _oraclePrice, address _lstor) public onlyOwner {
 
             svetT = IERC20(_svetT);
             oraclePrice = iOraclePrice (_oraclePrice);
+            lstorage = iLstorage(_lstor);
         }
 
 /*
@@ -118,17 +121,17 @@ contract Index2Swap  {
 
         // here wee need connection to Uniswap
 
-        address wETH = uniswapV2Router02.WETH();
+        
         // amountOutMin must be retrieved from an oracle of some kind
         address[] memory path = new address[](2);
-        path[0] = wETH;
+        path[0] = uniswapV2Router02.WETH();
         path[1] = _addrActive2;
         uniswapV2Router02.swapETHForExactTokens{ value: _amount1 }( _amount2, path, address (this), block.timestamp + miningDelay);
         
         //send liquidity  
         uint liqCurr;
         ( amountRes1, amountRes2, liqCurr) = uniswapV2Router02.addLiquidity(
-                     wETH,
+                     path[0],
                      _addrActive2,
                     0,// _amount1, //uint amountADesired,
                      _amount2, //uint amountBDesired,
@@ -137,7 +140,7 @@ contract Index2Swap  {
                     address (this),
                      block.timestamp + miningDelay
                     ) ;
-        liquidity [_addrIndex][_addrActive2].add( liqCurr);
+        lstorage.add (_addrIndex, _addrActive2,liqCurr);
 
     }
 
@@ -158,9 +161,8 @@ contract Index2Swap  {
         (uint112 reserve1,,) = curPair.getReserves();
 
         uint needLiq = _amount1.mul(curPair.totalSupply()).div(reserve1);
-        require(liquidity [ _addrIndex][_addrActive2] - needLiq > 0 , "no liquidity on this index");
-        liquidity [ _addrIndex][_addrActive2].sub(needLiq);
-
+        
+        lstorage.sub (_addrIndex, _addrActive2,needLiq);
         ( amountRes1, amountRes2) = uniswapV2Router02.removeLiquidity(
                      _addrActive1,
                      _addrActive2,
