@@ -38,7 +38,6 @@ contract Index2Swap  {
     iLstorage lstorage;
     IERC20 svetT;
 
-    IUniswapV2Factory uniswapV2Factory;
     IUniswapV2Router02 uniswapV2Router02;
     
     uint16 miningDelay = 600; //secs
@@ -59,10 +58,10 @@ contract Index2Swap  {
         owner = _newOwner;
     }
 
-    function setSwap (address _addrFact, address _addrRout, uint8 _discount, uint16 _miningDelay) public onlyOwner {
+    function setSwap (address _addrRout, uint8 _discount, uint16 _miningDelay) public onlyOwner {
 
-        require(_discount  > 0 && _addrFact != address (0x0) && _addrRout != address (0x0), "in setIUniswapV2 all must !=0");
-        uniswapV2Factory = IUniswapV2Factory (_addrFact);
+        require(_discount  > 0 && _addrRout != address (0x0), "in setIUniswapV2 all must !=0");
+//       
         uniswapV2Router02 = IUniswapV2Router02 (_addrRout);
         miningDelay = _miningDelay;
         discount = _discount;
@@ -154,7 +153,7 @@ contract Index2Swap  {
         // here wee need connection to Uniswap        
         //return liquidity  
     
-
+        IUniswapV2Factory uniswapV2Factory = IUniswapV2Factory (uniswapV2Router02.factory());
         address curPairAddr = uniswapV2Factory.getPair(_addrActive1, _addrActive2);
         require(curPairAddr != address(0), "No pair");        
         IUniswapV2Pair curPair = IUniswapV2Pair (curPairAddr);

@@ -87,7 +87,7 @@ module.exports = {
           
           },
        
-      TokTst: { deploy: false,},
+      TokTst: { deploy: false,}, //todo add totalsupply
       DAItest: {
         instanceOf: 'TokTst',
           fromIndex: 0,
@@ -107,31 +107,54 @@ module.exports = {
         args: ["QUBtst", "QUB", 16], 
 
         },
-      ANGtst: {
+      SVTtst: {
           instanceOf: 'TokTst',
           fromIndex: 0,
-          args: ["ANGtst", "ANG", 18], 
+          args: ["SVTtst", "SVT", 18], 
   
           },
                        
     },
       afterDeploy: async ({contracts, web3, logger}) => {
-        await contracts.Faucet.methods.setToken(contracts.DAItest.options.address).send({from: web3.eth.defaultAccount});
-        await contracts.Faucet.methods.setToken(contracts.ALFtst.options.address).send({from: web3.eth.defaultAccount});
-        await contracts.Faucet.methods.setToken(contracts.QUBtst.options.address).send({from: web3.eth.defaultAccount});  
-        await contracts.Faucet.methods.setToken(contracts.ANGtst.options.address).send({from: web3.eth.defaultAccount});        
 
-        await contracts.Experts.methods.addExpert(web3.eth.defaultAccount).send({from: web3.eth.defaultAccount});
-        await contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount});
-        await contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount});   
+        await Promise.all ([ 
+         contracts.Faucet.methods.setToken(contracts.DAItest.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.Faucet.methods.setToken(contracts.ALFtst.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.Faucet.methods.setToken(contracts.QUBtst.options.address).send({from: web3.eth.defaultAccount}),  
+         contracts.Faucet.methods.setToken(contracts.SVTtst.options.address).send({from: web3.eth.defaultAccount}),        
 
-        await contracts.OraclePrice.methods.addPrice(contracts.ALFtst.options.address, 1).send({from: web3.eth.defaultAccount});   
-        await contracts.OraclePrice.methods.addPrice(contracts.QUBtst.options.address, 2).send({from: web3.eth.defaultAccount});        
-        await contracts.OraclePrice.methods.addPrice(contracts.DAItest.options.address, 3).send({from: web3.eth.defaultAccount});
+         contracts.Experts.methods.addExpert(web3.eth.defaultAccount).send({from: web3.eth.defaultAccount}),
+         contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
+    //     contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount}),   
+         contracts.Oracleamount.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
+    //     contracts.Oracleamount.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount}),   
+          // TODO price scale x10000
+         contracts.OraclePrice.methods.addPrice(contracts.ALFtst.options.address, 1).send({from: web3.eth.defaultAccount}),   
+         contracts.OraclePrice.methods.addPrice(contracts.QUBtst.options.address, 2).send({from: web3.eth.defaultAccount}),        
+         contracts.OraclePrice.methods.addPrice(contracts.DAItest.options.address, 3).send({from: web3.eth.defaultAccount}),
 
-        await contracts.Exchange.methods.setBA(contracts.ANGtst.options.address).send({from: web3.eth.defaultAccount});
-        await contracts.Exchange.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount});
-        await contracts.ANGtst.methods.transfer(contracts.Exchange.options.address, "1000000000000000000000000").send({from: web3.eth.defaultAccount});
+         contracts.Oracleamount.methods.addamount(contracts.ALFtst.options.address, 1).send({from: web3.eth.defaultAccount}),   
+         contracts.Oracleamount.methods.addamount(contracts.QUBtst.options.address, 2).send({from: web3.eth.defaultAccount}),        
+         contracts.Oracleamount.methods.addamount(contracts.DAItest.options.address, 3).send({from: web3.eth.defaultAccount}),
+
+         contracts.Exchange.methods.setBA(contracts.SVTtst.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.Exchange.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount}),
+
+         contracts.SVTtst.methods.transfer(contracts.Exchange.options.address, "1000000000000000000000000").send({from: web3.eth.defaultAccount}),
+
+        // Index2Swap
+         contracts.Index2Swap.setSwap ("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", 99, 30 ),
+         contracts.Index2Swap.set (contracts.SVTtst.options.address, contracts.OraclePrice.options.address, contracts.Lstorage.options.address ),
+
+        // IndexFactory
+         contracts.IndexFactory.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.IndexFactory.methods.setAmountOracle(contracts.Oracleamount.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.IndexFactory.methods.setIndexStorage(contracts.IndexStorage.options.address).send({from: web3.eth.defaultAccount}),
+        // Lstorage
+         contracts.Lstorage.methods.setswap(contracts.Index2Swap.options.address).send({from: web3.eth.defaultAccount}),
+        //IndexStorage
+         contracts.IndexStorage.methods.setFactory(contracts.IndexFactory.options.address).send({from: web3.eth.defaultAccount})
+        ]);
     }
   },
 
