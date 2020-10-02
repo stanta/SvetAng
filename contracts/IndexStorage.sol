@@ -2,10 +2,9 @@ pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 
 contract IndexStorage {
-    //todo:  security wrapping 
     address owner;
     address factory; 
-    mapping (bytes32 => address) public indexes ;
+    mapping (bytes32 => address) internal Indexes ;
     
 
     struct IndexName { 
@@ -41,7 +40,7 @@ contract IndexStorage {
 
 
     function setIndex (string memory _name, string memory _symbol, address _index) public onlyFactory {
-        indexes[keccak256(abi.encodePacked(_name, _symbol))] = _index;
+        Indexes[keccak256(abi.encodePacked(_name, _symbol))] = _index;
         indexList.push(IndexName(_name, _symbol));        
     }
 
@@ -49,4 +48,7 @@ contract IndexStorage {
         return indexList.length;
     }
 
+    function indexes(bytes32 _code) external view returns (address) {
+        return Indexes[_code];
+    }
 }

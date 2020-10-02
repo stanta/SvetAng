@@ -8,7 +8,7 @@ contract Experts {
         owner =  msg.sender;
     }
 
-    mapping (address => bool) public isExpert;
+    mapping (address => bool) internal experts;
 
 
     modifier onlyOwner () {
@@ -22,10 +22,10 @@ contract Experts {
 
 
     function addExpert  (address _addrExp) public onlyOwner {
-        isExpert [_addrExp] = true;
+        experts [_addrExp] = true;
     }
     function delExpert  (address _addrExp) public onlyOwner {
-        isExpert [_addrExp] = false;
+        experts [_addrExp] = false;
     }
 
 
@@ -33,6 +33,8 @@ contract Experts {
         owner = _addrOwner;
     }
 
-
+    function isExpert (address _addr) external view returns (bool) {
+        return experts[_addr];
+    }
 
 }

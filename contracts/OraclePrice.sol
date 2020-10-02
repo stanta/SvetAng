@@ -1,12 +1,11 @@
 pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 import "./interfaces/iOraclePrice.sol";
-import "./Experts.sol";
-import "./ExpertsRewards.sol";
+import "./interfaces/iExperts.sol";
 
 contract OraclePrice is iOraclePrice {
 
-    Experts experts;
+    iExperts experts;
 
     struct PriceItem {
         uint price;
@@ -32,20 +31,11 @@ contract OraclePrice is iOraclePrice {
         require (experts.isExpert(msg.sender), "Only expert can do this");
         _;
     }
-    /*
-    modifier onlyExchange () {
-        require (msg.sender == exchange, "Only exchange");
-        _;
-    }
-*/
+
     function setExpertsContr (address _addrExp) public onlyOwner {
-        experts = Experts(_addrExp);
+        experts = iExperts(_addrExp);
     }
-  /*  
-    function setExchange (address _addrExchange) public onlyOwner {
-        exchange = _addrExchange;
-    }
-*/
+
     function setNewOwner (address _newOwner) public onlyOwner {
         owner = _newOwner;
     }

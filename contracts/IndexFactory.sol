@@ -3,8 +3,9 @@ pragma experimental ABIEncoderV2;
 
 import "./IndexToken.sol";
 import "./interfaces/iOraclePrice.sol";
-import "./interfaces/iOracleamount.sol";
-import "./IndexStorage.sol";
+import "./interfaces/iOracleCircAmount.sol";
+import "./interfaces/iOracleTotSupply.sol";
+import "./interfaces/iIndexStorage.sol"; //todo intertface
 
 contract IndexFactory  {
 
@@ -12,8 +13,9 @@ contract IndexFactory  {
 
     address owner;
     iOraclePrice oraclePrice;
-    iOracleamount oracleamount;
-    IndexStorage indexStorage;
+    iOracleCircAmount oracleCircAmount;
+    iOracleTotSupply oracleTotSupply;
+    iIndexStorage indexStorage;
 
     function setOwner (address _newOwner) public onlyOwner {
         owner = _newOwner;
@@ -30,7 +32,7 @@ contract IndexFactory  {
 
     function setIndexStorage (address _addr) public onlyOwner
         {
-        indexStorage = IndexStorage(_addr);
+        indexStorage = iIndexStorage(_addr);
         }
 
     function setPriceOracle(address _addr) public onlyOwner
@@ -40,9 +42,13 @@ contract IndexFactory  {
 
     function setAmountOracle(address _addr) public onlyOwner
         {
-        oracleamount = iOracleamount(_addr);
+        oracleCircAmount = iOracleCircAmount(_addr);
         }
 
+    function setTotSupply(address _addr) public onlyOwner
+        {
+        oracleTotSupply = iOracleTotSupply(_addr);
+        }
 
     
 
@@ -53,10 +59,9 @@ contract IndexFactory  {
         for (uint8 i=0; i<_actives.length; i++) {
             uint price =  oraclePrice.getLastPrice(_actives[i]);
             require(price > 0, "No price for token");
-            ERC20 token = ERC20(_actives[i]);
-            uint ts = token.totalSupply();
+            uint ts = oracleTotSupply.getLastamount(_actives[i]);
             require(ts > 0, "No total supply for token");
-            uint amount = oracleamount.getLastamount(_actives[i]);
+            uint amount = oracleCircAmount.getLastamount(_actives[i]);
             require(amount > 0, "No circ. amount for token");
             //token am =  Token_p * (Token_s / Token_ts) / _activites.length
             activesAm[i] = amount * price / ts / _actives.length;

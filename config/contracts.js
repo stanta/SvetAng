@@ -56,11 +56,16 @@ module.exports = {
         args: [], 
         
         },
-      Oracleamount: {
+      OracleCircAmount: {
           fromIndex: 0,
           args: [], 
           
           },
+      OracleTotSupply: {
+            fromIndex: 0,
+            args: [], 
+            
+            },
       Index2Swap: {
             fromIndex: 0,
             args: [], 
@@ -126,16 +131,16 @@ module.exports = {
          contracts.Experts.methods.addExpert(web3.eth.defaultAccount).send({from: web3.eth.defaultAccount}),
          contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
     //     contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount}),   
-         contracts.Oracleamount.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
-    //     contracts.Oracleamount.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount}),   
+         contracts.OracleCircAmount.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
+    //     contracts.OracleCircAmount.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount}),   
           // TODO price scale x10000
          contracts.OraclePrice.methods.addPrice(contracts.ALFtst.options.address, 1).send({from: web3.eth.defaultAccount}),   
          contracts.OraclePrice.methods.addPrice(contracts.QUBtst.options.address, 2).send({from: web3.eth.defaultAccount}),        
          contracts.OraclePrice.methods.addPrice(contracts.DAItest.options.address, 3).send({from: web3.eth.defaultAccount}),
 
-         contracts.Oracleamount.methods.addamount(contracts.ALFtst.options.address, 1).send({from: web3.eth.defaultAccount}),   
-         contracts.Oracleamount.methods.addamount(contracts.QUBtst.options.address, 2).send({from: web3.eth.defaultAccount}),        
-         contracts.Oracleamount.methods.addamount(contracts.DAItest.options.address, 3).send({from: web3.eth.defaultAccount}),
+         contracts.OracleCircAmount.methods.addamount(contracts.ALFtst.options.address, 1).send({from: web3.eth.defaultAccount}),   
+         contracts.OracleCircAmount.methods.addamount(contracts.QUBtst.options.address, 2).send({from: web3.eth.defaultAccount}),        
+         contracts.OracleCircAmount.methods.addamount(contracts.DAItest.options.address, 3).send({from: web3.eth.defaultAccount}),
 
          contracts.Exchange.methods.setBA(contracts.SVTtst.options.address).send({from: web3.eth.defaultAccount}),
          contracts.Exchange.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount}),
@@ -148,8 +153,10 @@ module.exports = {
 
         // IndexFactory
          contracts.IndexFactory.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount}),
-         contracts.IndexFactory.methods.setAmountOracle(contracts.Oracleamount.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.IndexFactory.methods.setAmountOracle(contracts.OracleCircAmount.options.address).send({from: web3.eth.defaultAccount}),
          contracts.IndexFactory.methods.setIndexStorage(contracts.IndexStorage.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.IndexFactory.methods.setTotSupply(contracts.OracleTotSupply.options.address).send({from: web3.eth.defaultAccount}),
+
         // Lstorage
          contracts.Lstorage.methods.setswap(contracts.Index2Swap.options.address).send({from: web3.eth.defaultAccount}),
         //IndexStorage
