@@ -12,7 +12,7 @@ contract IndexStorage {
         string symbol;
     }
 
-    IndexName[] public indexList;
+    IndexName[] public indexList; //todo
 
 
     constructor () public {
@@ -48,7 +48,7 @@ contract IndexStorage {
         return indexList.length;
     }
 
-    function indexes(bytes32 _code) external view returns (address) {
-        return Indexes[_code];
+    function indexes(string memory _name, string memory _symbol) external view returns (address) {
+        return Indexes[keccak256(abi.encodePacked(_name, _symbol))];
     }
 }

@@ -54,7 +54,7 @@ contract IndexFactory  {
 
     function makeIndex (string memory _name, string memory _symbol, address[] memory _actives) public onlyOwner returns (address) {
         
-        require (indexStorage.indexes(keccak256(abi.encodePacked(_name, _symbol))) == address(0x0), "Same name/symbol exists");
+        require (indexStorage.indexes(keccak256(abi.encodePacked(_name, _symbol))) == address(0x0), "Same name+symbol exists");
         uint[] memory activesAm;
         for (uint8 i=0; i<_actives.length; i++) {
             uint price =  oraclePrice.getLastPrice(_actives[i]);
