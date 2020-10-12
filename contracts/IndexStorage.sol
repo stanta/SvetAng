@@ -33,7 +33,7 @@ contract IndexStorage is iIndexStorage {
     }
 
 
-    function setIndex (string memory _name, string memory _symbol, address _index) external override onlyFactory {
+    function setIndex (string calldata _name, string calldata _symbol, address _index) external override onlyFactory {
         Indexes[keccak256(abi.encodePacked(_name, _symbol))] = _index;
         IndexList.push(IndexName(_name, _symbol, _index));        
     }
