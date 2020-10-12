@@ -1,19 +1,13 @@
 pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
+import "./interfaces/iIndexStorage.sol";
 
-contract IndexStorage {
+contract IndexStorage is iIndexStorage {
     address owner;
     address factory; 
     mapping (bytes32 => address) internal Indexes ;
     
-
-    struct IndexName { 
-        string name;
-        string symbol;
-    }
-
-    IndexName[] public indexList; //todo
-
+    IndexName[]  IndexList; //todo
 
     constructor () public {
         owner = msg.sender;
@@ -39,16 +33,23 @@ contract IndexStorage {
     }
 
 
-    function setIndex (string memory _name, string memory _symbol, address _index) public onlyFactory {
+    function setIndex (string memory _name, string memory _symbol, address _index) external override onlyFactory {
         Indexes[keccak256(abi.encodePacked(_name, _symbol))] = _index;
-        indexList.push(IndexName(_name, _symbol));        
+        IndexList.push(IndexName(_name, _symbol, _index));        
     }
 
-    function getLenIndexes () public view  returns (uint) { //onlyExchange
-        return indexList.length;
+    function getLenIndexes () external view override returns (uint) { //onlyExchange
+        return IndexList.length;
     }
 
-    function indexes(string memory _name, string memory _symbol) external view returns (address) {
+    function indexes(string calldata _name, string calldata _symbol) external view override returns (address) {
         return Indexes[keccak256(abi.encodePacked(_name, _symbol))];
     }
+
+    function indexList() external view override returns (IndexName[] memory)
+    {
+        return IndexList;
+    }
+
+
 }
