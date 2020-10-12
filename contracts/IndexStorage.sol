@@ -8,7 +8,7 @@ contract IndexStorage is iIndexStorage {
     mapping (bytes32 => address) internal Indexes ;
     
     IndexName[]  IndexList; //todo
-
+    
     constructor () public {
         owner = msg.sender;
     }

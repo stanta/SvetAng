@@ -11,17 +11,30 @@ contract IndexToken is iIndexToken, ERC20 {
 
 
     Index[] internal activesList ;
-
-
+    bool transferEnable;
+    address factory;
     uint8 private _decimals;
-
+    
     /**
      * @dev Sets the values for `name`, `symbol`, and `decimals`. All three of
      * these values are immutable: they can only be set once during
      * construction.
      */
- 
 
+    modifier onlyFactory() {
+        require (factory == msg.sender, "Only factory can do this");
+        _;
+    }
+
+    function setFactory (address _addr) public onlyFactory
+        {
+        factory = _addr;
+        }
+
+    function setTransfer (bool _trans) public onlyFactory
+        {
+            transferEnable = _trans;
+        }
 
     constructor (string memory _name, string memory _symbol, address[] memory _activesAddr, uint[] memory _activAm ) ERC20(_name, _symbol)
         //decimals            
@@ -31,7 +44,11 @@ contract IndexToken is iIndexToken, ERC20 {
         for (uint8 i=0; i<_activesAddr.length; i++) {
                 activesList.push(Index(_activesAddr[i], _activAm[i]));
                 }
-            }
+        factory = msg.sender;
+        transferEnable = false;
+        }
+    
+
 
     function getActivesList() external override view returns (Index[] memory) {
       return activesList;
@@ -82,6 +99,17 @@ contract IndexToken is iIndexToken, ERC20 {
 
         _approve(account, _msgSender(), decreasedAllowance);
         _burn(account, amount);
+    }
+
+    function transfer(address recipient, uint amount)  public  override (ERC20, IERC20) returns (bool) { 
+        require(transferEnable, "Transfers not given for token" );
+        super.transfer(recipient, amount);
+
+    }
+
+    function transferFrom(address sender, address recipient, uint256 amount) public virtual override(ERC20, IERC20)  returns (bool) {
+        require(transferEnable, "Transfers not given for token" );
+        super.transferFrom(sender, recipient, amount);
     }
 
 }
