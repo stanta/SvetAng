@@ -15,7 +15,7 @@ import ERC20 from '../../embarkArtifacts/contracts/TokTst';
  * 5. Transfer amount of token from, transfer amoun of ANG to customer
  */
 
-class withdraw extends React.Component {
+class Withdraw extends React.Component {
 
   constructor(props) {
     super(props);
@@ -236,4 +236,4 @@ async approve(e) {
   }
 }
 
-export default withdraw;
+export default Withdraw;

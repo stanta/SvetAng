@@ -132,19 +132,20 @@ module.exports = {
          contracts.OraclePrice.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
     //     contracts.OraclePrice.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount}),   
          contracts.OracleCircAmount.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
+         contracts.OracleTotSupply.methods.setExpertsContr(contracts.Experts.options.address).send({from: web3.eth.defaultAccount}),
     //     contracts.OracleCircAmount.methods.setExchange(contracts.Exchange.options.address).send({from: web3.eth.defaultAccount}),   
           // TODO price scale x10000
          contracts.OraclePrice.methods.addPrice(contracts.Bytomtest.options.address, web3.utils.toBN(0.070325 * 10**18)).send({from: web3.eth.defaultAccount}),   
          contracts.OraclePrice.methods.addPrice(contracts.Waytst.options.address, web3.utils.toBN(0.241054 *10**18)).send({from: web3.eth.defaultAccount}),        
          contracts.OraclePrice.methods.addPrice(contracts.Kybertst.options.address,  web3.utils.toBN(0.941986 * 10**18)).send({from: web3.eth.defaultAccount}),
       // circulation amount
-         contracts.OracleCircAmount.methods.addamount(contracts.Bytomtest.options.address, 1374417194).send({from: web3.eth.defaultAccount}),   
-         contracts.OracleCircAmount.methods.addamount(contracts.Waytst.options.address, 189000000).send({from: web3.eth.defaultAccount}),        
-         contracts.OracleCircAmount.methods.addamount(contracts.Kybertst.options.address, 198046404).send({from: web3.eth.defaultAccount}),
+         contracts.OracleCircAmount.methods.addamount(contracts.Bytomtest.options.address,  web3.utils.toBN(1374417194)).send({from: web3.eth.defaultAccount}),   
+         contracts.OracleCircAmount.methods.addamount(contracts.Waytst.options.address,  web3.utils.toBN(189000000)).send({from: web3.eth.defaultAccount}),        
+         contracts.OracleCircAmount.methods.addamount(contracts.Kybertst.options.address,  web3.utils.toBN(198046404)).send({from: web3.eth.defaultAccount}),
          // OracleTotSupply
-         contracts.OracleTotSupply.methods.addamount(contracts.Bytomtest.options.address, 2100000000).send({from: web3.eth.defaultAccount}),   
-         contracts.OracleTotSupply.methods.addamount(contracts.Waytst.options.address, 210451990).send({from: web3.eth.defaultAccount}),        
-         contracts.OracleTotSupply.methods.addamount(contracts.Kybertst.options.address, 210404983).send({from: web3.eth.defaultAccount}),
+         contracts.OracleTotSupply.methods.addamount(contracts.Bytomtest.options.address,  web3.utils.toBN(21000000)).send({from: web3.eth.defaultAccount}),   
+         contracts.OracleTotSupply.methods.addamount(contracts.Waytst.options.address,  web3.utils.toBN(210451990)).send({from: web3.eth.defaultAccount}),        
+         contracts.OracleTotSupply.methods.addamount(contracts.Kybertst.options.address,  web3.utils.toBN(210404983)).send({from: web3.eth.defaultAccount}),
 
 
          contracts.Exchange.methods.setBA(contracts.SVTtst.options.address).send({from: web3.eth.defaultAccount}),
