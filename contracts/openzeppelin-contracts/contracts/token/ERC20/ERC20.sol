@@ -2,7 +2,7 @@ pragma solidity ^0.6.1;
 
 import "../../GSN/Context.sol";
 //import "./IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IERC20.sol";
 import "../../math/SafeMath.sol";
 
 /**
@@ -31,6 +31,7 @@ import "../../math/SafeMath.sol";
  */
 contract ERC20 is Context, IERC20 {
     using SafeMath for uint256;
+    
 
     mapping (address => uint256) private _balances;
 
@@ -60,7 +61,7 @@ contract ERC20 is Context, IERC20 {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
+    function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -96,7 +97,7 @@ contract ERC20 is Context, IERC20 {
      * - the caller must have allowance for `sender`'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public  override returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;

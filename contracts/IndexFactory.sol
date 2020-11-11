@@ -52,27 +52,27 @@ contract IndexFactory  {
 
     
 
-    function makeIndex (string memory _name, string memory _symbol, address[] memory _actives) public onlyOwner returns (address) {
+    function makeIndex (address _indexAddr, address[] memory _actives) public onlyOwner returns (address) { // string memory _name, string memory _symbol,
+        IndexToken indexT =  IndexToken (_indexAddr);
+        string memory name = indexT.name();
+        string memory symbol =  indexT.symbol();
+        require (indexStorage.indexes(name, symbol) == address(0x0), "Same name+symbol exists");
+        uint[] memory activesAm = new uint[](_actives.length);
         
-        require (indexStorage.indexes(_name, _symbol) == address(0x0), "Same name+symbol exists");
-        uint[] memory activesAm;
         for (uint8 i=0; i<_actives.length; i++) {
-            uint price =  oraclePrice.getLastPrice(_actives[i]);
+            uint price =  oraclePrice.getLastPrice(_actives[i]);        
             require(price > 0, "No price for token");
             uint ts = oracleTotSupply.getLastamount(_actives[i]);
             require(ts > 0, "No total supply for token");
             uint amount = oracleCircAmount.getLastamount(_actives[i]);
-            require(amount > 0, "No circ. amount for token");
-            //token am =  Token_p * (Token_s / Token_ts) / _activites.length
+            require(amount > 0, "No circ. amount for token");         
             activesAm[i] = amount * price / ts / _actives.length;
-
         }
+
         
-
-        IndexToken indexT = new IndexToken (_name, _symbol, _actives,  activesAm);
-
-        indexStorage.setIndex(_name, _symbol, address(indexT));
-        return address(indexT);
+        indexT.setActivesList(_actives, activesAm);
+        indexStorage.setIndex(name, symbol, address(indexT));
+        return address(indexT); //indexT
 
     }
 

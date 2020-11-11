@@ -66,6 +66,7 @@ module.exports = {
             args: [], 
             
             },
+
       Index2Swap: {
             fromIndex: 0,
             args: [], 
@@ -118,6 +119,11 @@ module.exports = {
           args: ["SVTtst", "SVT", 18], 
   
           },
+      IndexToken: {
+            fromIndex: 0,
+            args: ["SvetIndex1", "SVI1"], 
+            
+          }
                        
     },
       afterDeploy: async ({contracts, web3, logger}) => {
@@ -151,7 +157,7 @@ module.exports = {
          contracts.Exchange.methods.setBA(contracts.SVTtst.options.address).send({from: web3.eth.defaultAccount}),
          contracts.Exchange.methods.setPriceOracle(contracts.OraclePrice.options.address).send({from: web3.eth.defaultAccount}),
 
-         contracts.SVTtst.methods.transfer(contracts.Exchange.options.address, "1000000000000000000000000").send({from: web3.eth.defaultAccount}),
+         contracts.SVTtst.methods.transfer(contracts.Exchange.options.address, "10000000000000000000000").send({from: web3.eth.defaultAccount}),
 
         // Index2Swap
          contracts.Index2Swap.setSwap ("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", 99, 30 ),
@@ -166,8 +172,17 @@ module.exports = {
         // Lstorage
          contracts.Lstorage.methods.setswap(contracts.Index2Swap.options.address).send({from: web3.eth.defaultAccount}),
         //IndexStorage
-         contracts.IndexStorage.methods.setFactory(contracts.IndexFactory.options.address).send({from: web3.eth.defaultAccount})
+         contracts.IndexStorage.methods.setFactory(contracts.IndexFactory.options.address).send({from: web3.eth.defaultAccount}),
+
         ]);
+
+         // init index SVET1
+         
+         await contracts.IndexFactory.methods.makeIndex(contracts.IndexToken.options.address,
+                  [contracts.Bytomtest.options.address,
+                  contracts.Waytst.options.address,  
+                  contracts.Kybertst.options.address]
+          ).send({from: web3.eth.defaultAccount});
     }
   },
 

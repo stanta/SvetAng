@@ -1,7 +1,7 @@
 pragma solidity ^0.6.1;
 pragma experimental ABIEncoderV2;
 import "./interfaces/iIndextoken.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
 contract IndexToken is iIndexToken, ERC20 {
   
@@ -9,11 +9,15 @@ contract IndexToken is iIndexToken, ERC20 {
     * makes ERC20 compatible index token 
      */
 
-
-    Index[] internal activesList ;
-    bool transferEnable;
     address factory;
+    
     uint8 private _decimals;
+    bool transferEnable;
+    bool enableSetActvs;
+    Index[] internal activesList ;
+    string private _name;
+    string private _symbol;
+  //  uint8 private _decimals;
     
     /**
      * @dev Sets the values for `name`, `symbol`, and `decimals`. All three of
@@ -36,19 +40,25 @@ contract IndexToken is iIndexToken, ERC20 {
             transferEnable = _trans;
         }
 
-    constructor (string memory _name, string memory _symbol, address[] memory _activesAddr, uint[] memory _activAm ) ERC20(_name, _symbol)
-        //decimals            
-            public {
-                    
+    constructor (string memory name, string memory symbol ) public {
+                        
+        _name = name;
+        _symbol = symbol;
         _decimals = 18;
-        for (uint8 i=0; i<_activesAddr.length; i++) {
-                activesList.push(Index(_activesAddr[i], _activAm[i]));
-                }
+
         factory = msg.sender;
         transferEnable = false;
+        enableSetActvs = true;
+        
         }
     
-
+    function setActivesList ( address[] memory _activesAddr, uint[] memory _activAm) public {
+        require(enableSetActvs, "Actives alresady filled");
+        for (uint8 i=0; i<_activesAddr.length; i++) {
+            activesList.push(Index(_activesAddr[i], _activAm[i]));
+            }
+        enableSetActvs = false;
+    }
 
     function getActivesList() external override view returns (Index[] memory) {
       return activesList;
@@ -111,5 +121,38 @@ contract IndexToken is iIndexToken, ERC20 {
         require(transferEnable, "Transfers not given for token" );
         super.transferFrom(sender, recipient, amount);
     }
+
+    /**
+     * @dev Returns the name of the token.
+     */
+    function name() public view returns (string memory) {
+        return _name;
+    }
+
+    /**
+     * @dev Returns the symbol of the token, usually a shorter version of the
+     * name.
+     */
+    function symbol() public view returns (string memory) {
+        return _symbol;
+    }
+
+    /**
+     * @dev Returns the number of decimals used to get its user representation.
+     * For example, if `decimals` equals `2`, a balance of `505` tokens should
+     * be displayed to a user as `5,05` (`505 / 10 ** 2`).
+     *
+     * Tokens usually opt for a value of 18, imitating the relationship between
+     * Ether and Wei. This is the value {ERC20} uses, unless {_setupDecimals} is
+     * called.
+     *
+     * NOTE: This information is only used for _display_ purposes: it in
+     * no way affects any of the arithmetic of the contract, including
+     * {IERC20-balanceOf} and {IERC20-transfer}.
+     */
+    function decimals() public view returns (uint8) {
+        return _decimals;
+    }
+
 
 }

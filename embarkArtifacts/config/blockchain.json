@@ -10,5 +10,5 @@
   "dappAutoEnable": true,
   "warnIfMetamask": true,
   "blockchainClient": "ganache-cli",
-  "networkId": 1602479834406
+  "networkId": 1604910327766
 }
