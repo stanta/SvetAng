@@ -8,14 +8,14 @@ import React from 'react'
 //import OraclePrice from '../SvetAng/embarkArtifacts/contracts/OraclePrice';
 //import Exchange from '../SvetAng/embarkArtifacts/contracts/Exchange';
 //import ERC20 from '../SvetAng/embarkArtifacts/contracts/TokTst';
-import {IndexTokenConfig} from '../contracts/IndexToken';
-import {DrizzleProvider} from 'drizzle-react';
-import {LoadingContainer, AccountData, ContractData, ContractForm} from 'drizzle-react-components';
+//import {IndexTokenConfig} from '../contracts/IndexToken';
+//import {DrizzleProvider} from 'drizzle-react';
+/*import {LoadingContainer, AccountData, ContractData, ContractForm} from 'drizzle-react-components';
  
 const drizzleOptions  = {
     contracts: [IndexTokenConfig]
 }
-/*
+
 async getActivesList(e) {
    // e.preventDefault();
     await EmbarkJS.enableEthereum();
@@ -60,25 +60,72 @@ async getActivesList(e) {
     });
   }
 */
-export default function IndexTokensListItem() {
-    return (
-        <DrizzleProvider options = {drizzleOptions}>
-            <LoadingContainer>
-                
+class IndexTokensListItem  extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      valueSet: 10,
+      getValue: "",
+      logs: [],
+      addToken: "",
+      decimals: 18,
+      tokenPrice: 0,
+      symbol: "",
+      tokenList: [],
+      isDeposited: 0,
+      fullDeposited: 0,
+      sumtoStake:0,
+      curToken: "",
+      OraclePrice:"",
+      curOptstate:"" ,
+      ERC20: "" ,
+      sumToWithdrawSel: 0,
+      account:""
+    };
+  }
+
+  handleChange(e) {
+    let keyVal = {}
+    keyVal[e.target.name] = e.target.value;
+    this.setState( keyVal );
+                 
+  }
+
+
+async  indexList(e) {
+ // e.preventDefault();
+  await EmbarkJS.enableEthereum();
+  await web3.eth.getAccounts().then(e => { this.state.account = e[0];  
+    });
+    IndexStorage.methods.indexList().call().then(_value => this.setState({ tokenList: _value }));
+  
+}
+
+render() {
+  return (<React.Fragment>
+      
+
+  return (
+
             <li className="left-list-item">
                         
                         <i className="fa fa-question-circle"></i>
-                        <AccountData accountIndex={0} units={"ether"} precision = {3} />
 
                         <p>
                             VERY GOOD INDEX TOKEN
                         </p>
 
-                        <ContractData contract = "IndexTokenConfig" method = "getActivesList" />
                         <button className="invest">INVEST</button>
                     
             </li>
-            </LoadingContainer>
-        </DrizzleProvider>
-    )
+ 
+    ) 
+    </React.Fragment>
+    );
+  
 }
+}
+export default IndexTokensListItem;
+
